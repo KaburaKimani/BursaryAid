@@ -12,6 +12,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -19,13 +20,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.bursaryaid.feature.auth.logic.AuthValidator
+import com.example.bursaryaid.feature.auth.viewmodel.AuthViewModel
 import com.example.bursaryaid.ui.components.AppButton
 import com.example.bursaryaid.ui.components.AppTextField
 import com.example.bursaryaid.ui.components.ErrorMessage
 
 @Composable
 fun RegisterScreen(
+    viewModel: AuthViewModel,
     onRegisterSuccess: () -> Unit,
     onNavigateToLogin: () -> Unit
 ) {
@@ -34,7 +36,8 @@ fun RegisterScreen(
     var phoneNumber by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) { viewModel.clearMessages() }
 
     Column(
         modifier = Modifier
@@ -49,55 +52,53 @@ fun RegisterScreen(
 
         AppTextField(
             value = fullName,
-            onValueChange = { fullName = it; errorMessage = null },
+            onValueChange = { fullName = it; viewModel.clearMessages() },
             label = "Full name"
         )
         Spacer(Modifier.height(12.dp))
         AppTextField(
             value = email,
-            onValueChange = { email = it; errorMessage = null },
+            onValueChange = { email = it; viewModel.clearMessages() },
             label = "Email"
         )
         Spacer(Modifier.height(12.dp))
         AppTextField(
             value = phoneNumber,
-            onValueChange = { phoneNumber = it; errorMessage = null },
+            onValueChange = { phoneNumber = it; viewModel.clearMessages() },
             label = "Phone number"
         )
         Spacer(Modifier.height(12.dp))
         AppTextField(
             value = password,
-            onValueChange = { password = it; errorMessage = null },
+            onValueChange = { password = it; viewModel.clearMessages() },
             label = "Password",
             isPassword = true
         )
         Spacer(Modifier.height(12.dp))
         AppTextField(
             value = confirmPassword,
-            onValueChange = { confirmPassword = it; errorMessage = null },
+            onValueChange = { confirmPassword = it; viewModel.clearMessages() },
             label = "Confirm password",
             isPassword = true
         )
 
-        ErrorMessage(errorMessage)
+        ErrorMessage(viewModel.errorMessage)
 
         Spacer(Modifier.height(12.dp))
         AppButton(
             text = "Register",
+            isLoading = viewModel.isLoading,
             onClick = {
-                val error = AuthValidator.validateRegistration(
-                    fullName, email, phoneNumber, password, confirmPassword
-                )
-                if (error != null) {
-                    errorMessage = error
-                } else {
-                    // TEMPORARY: saving to the database comes when Member 3's repository is ready
+                if (viewModel.registerUser(fullName, email, phoneNumber, password, confirmPassword)) {
                     onRegisterSuccess()
                 }
             }
         )
 
-        TextButton(onClick = onNavigateToLogin) {
+        TextButton(onClick = {
+            viewModel.clearMessages()
+            onNavigateToLogin()
+        }) {
             Text("Already have an account? Log in")
         }
     }

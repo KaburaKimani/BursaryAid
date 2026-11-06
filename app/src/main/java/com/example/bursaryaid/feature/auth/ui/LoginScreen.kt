@@ -17,19 +17,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.bursaryaid.feature.auth.logic.AuthValidator
+import com.example.bursaryaid.feature.auth.viewmodel.AuthViewModel
 import com.example.bursaryaid.ui.components.AppButton
 import com.example.bursaryaid.ui.components.AppTextField
 import com.example.bursaryaid.ui.components.ErrorMessage
+import com.example.bursaryaid.ui.components.SuccessMessage
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: (userId: Long, isAdmin: Boolean) -> Unit,
+    viewModel: AuthViewModel,
+    onLoginSuccess: (isAdmin: Boolean) -> Unit,
     onNavigateToRegister: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier
@@ -42,33 +43,30 @@ fun LoginScreen(
         Text("Log in to continue", style = MaterialTheme.typography.bodyMedium)
         Spacer(Modifier.height(24.dp))
 
+        SuccessMessage(viewModel.successMessage)
+
         AppTextField(
             value = email,
-            onValueChange = { email = it; errorMessage = null },
+            onValueChange = { email = it; viewModel.clearMessages() },
             label = "Email"
         )
         Spacer(Modifier.height(12.dp))
         AppTextField(
             value = password,
-            onValueChange = { password = it; errorMessage = null },
+            onValueChange = { password = it; viewModel.clearMessages() },
             label = "Password",
             isPassword = true
         )
 
-        ErrorMessage(errorMessage)
+        ErrorMessage(viewModel.errorMessage)
 
         Spacer(Modifier.height(12.dp))
         AppButton(
             text = "Log in",
+            isLoading = viewModel.isLoading,
             onClick = {
-                val error = AuthValidator.validateLogin(email, password)
-                if (error != null) {
-                    errorMessage = error
-                } else {
-                    // TEMPORARY fake login until Member 3's database is ready.
-                    // Any email containing "admin" logs in as admin.
-                    val isAdmin = email.contains("admin", ignoreCase = true)
-                    onLoginSuccess(101L, isAdmin)
+                if (viewModel.loginUser(email, password)) {
+                    onLoginSuccess(viewModel.isAdmin)
                 }
             }
         )
