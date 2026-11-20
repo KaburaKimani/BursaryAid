@@ -22,6 +22,9 @@ object AdminApplicationFilter {
 
     /** DRAFT applications never reach the administrator. */
     private val HIDDEN_STATUSES = setOf(ApplicationStatus.DRAFT)
+    /** Statuses an administrator can filter by; the chips on the list screen come from this. */
+    val FILTERABLE_STATUSES: List<ApplicationStatus> =
+        ApplicationStatus.values().filter { it !in HIDDEN_STATUSES }
 
     /** Hides drafts, applies the status filter and the search, and lists the newest first. */
     fun apply(
