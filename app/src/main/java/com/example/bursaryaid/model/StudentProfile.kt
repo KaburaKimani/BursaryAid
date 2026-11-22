@@ -8,12 +8,13 @@ data class StudentProfile(
     @PrimaryKey(autoGenerate = true)
     val studentId: Long = 0L,
     val userId: Long,
-    val admissionNumber: String,
+    val registrationNumber: String,
     val institutionName: String,
-    val courseOfStudy: String,
+    val courseName: String,
     val yearOfStudy: Int,
-    val countyOfOrigin: String,
-    val familyIncomeLevel: String,
-    val isOrphaned: Boolean,
-    val isDisabled: Boolean
+    val householdSize: Int = 1,
+    val monthlyHouseholdIncomeKes: Long = 0L,
+    val guardianName: String = "",
+    val guardianPhoneNumber: String = "",
+    val profileUpdatedAtMillis: Long = System.currentTimeMillis()
 )

@@ -1,8 +1,8 @@
 package com.example.bursaryaid.feature.student.logic
 
-import com.example.bursaryaid.data.model.AppConstants
-import com.example.bursaryaid.data.model.ApplicationStatus
-import com.example.bursaryaid.data.model.BursaryApplication
+import com.example.bursaryaid.model.AppConstants
+import com.example.bursaryaid.model.ApplicationStatus
+import com.example.bursaryaid.model.BursaryApplication
 
 /**
  * Student-side lifecycle rules, kept in one place so UI, ViewModels and tests agree.

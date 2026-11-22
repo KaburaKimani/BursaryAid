@@ -3,10 +3,10 @@ package com.example.bursaryaid.feature.student.viewmodel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.bursaryaid.data.model.ApplicationRepository
-import com.example.bursaryaid.data.model.BursaryApplication
-import com.example.bursaryaid.data.model.BursaryRepository
-import com.example.bursaryaid.data.model.StudentProfileRepository
+import com.example.bursaryaid.repository.BursaryApplicationRepository
+import com.example.bursaryaid.repository.BursaryRepository
+import com.example.bursaryaid.repository.StudentProfileRepository
+import com.example.bursaryaid.model.BursaryApplication
 
 /**
  * Plain factories so no dependency-injection library has to be agreed first.
@@ -24,14 +24,14 @@ fun applicationFormViewModelFactory(
     userId: Long,
     selectedApplicationId: Long?,
     studentProfileRepository: StudentProfileRepository,
-    applicationRepository: ApplicationRepository,
+    bursaryApplicationRepository: BursaryApplicationRepository,
     bursaryRepository: BursaryRepository,
     onApplicationSubmitted: suspend (BursaryApplication) -> Unit = {}
 ): ViewModelProvider.Factory = viewModelFactory {
     initializer {
         ApplicationFormViewModel(
             userId, selectedApplicationId, studentProfileRepository,
-            applicationRepository, bursaryRepository, onApplicationSubmitted
+            bursaryApplicationRepository, bursaryRepository, onApplicationSubmitted
         )
     }
 }
@@ -39,22 +39,22 @@ fun applicationFormViewModelFactory(
 fun myApplicationsViewModelFactory(
     userId: Long,
     studentProfileRepository: StudentProfileRepository,
-    applicationRepository: ApplicationRepository,
+    bursaryApplicationRepository: BursaryApplicationRepository,
     bursaryRepository: BursaryRepository
 ): ViewModelProvider.Factory = viewModelFactory {
-    initializer { MyApplicationsViewModel(userId, studentProfileRepository, applicationRepository, bursaryRepository) }
+    initializer { MyApplicationsViewModel(userId, studentProfileRepository, bursaryApplicationRepository, bursaryRepository) }
 }
 
 fun applicationDetailsViewModelFactory(
     userId: Long,
     selectedApplicationId: Long,
     studentProfileRepository: StudentProfileRepository,
-    applicationRepository: ApplicationRepository,
+    bursaryApplicationRepository: BursaryApplicationRepository,
     bursaryRepository: BursaryRepository
 ): ViewModelProvider.Factory = viewModelFactory {
     initializer {
         ApplicationDetailsViewModel(
-            userId, selectedApplicationId, studentProfileRepository, applicationRepository, bursaryRepository
+            userId, selectedApplicationId, studentProfileRepository, bursaryApplicationRepository, bursaryRepository
         )
     }
 }

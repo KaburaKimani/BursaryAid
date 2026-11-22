@@ -14,7 +14,7 @@ interface AllocationRecordDao {
     suspend fun insertAllocation(allocation: AllocationRecord): Long
 
     @Update
-    suspend fun updateAllocation(allocation: AllocationRecord)
+    suspend fun updateAllocation(allocation: AllocationRecord): Int
 
     @Query("SELECT * FROM allocation_records WHERE allocationId = :allocationId")
     suspend fun getAllocationById(allocationId: Long): AllocationRecord?

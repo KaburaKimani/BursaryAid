@@ -14,7 +14,7 @@ interface BursaryDao {
     suspend fun insertBursary(bursary: Bursary): Long
 
     @Update
-    suspend fun updateBursary(bursary: Bursary)
+    suspend fun updateBursary(bursary: Bursary): Int
 
     @Query("SELECT * FROM bursaries WHERE bursaryId = :bursaryId")
     suspend fun getBursaryById(bursaryId: Long): Bursary?
@@ -22,6 +22,6 @@ interface BursaryDao {
     @Query("SELECT * FROM bursaries ORDER BY applicationDeadlineMillis ASC")
     fun getAllBursaries(): Flow<List<Bursary>>
 
-    @Query("SELECT * FROM bursaries WHERE isOpen = 1 ORDER BY applicationDeadlineMillis ASC")
+    @Query("SELECT * FROM bursaries WHERE isBursaryOpen = 1 ORDER BY applicationDeadlineMillis ASC")
     fun getOpenBursaries(): Flow<List<Bursary>>
 }

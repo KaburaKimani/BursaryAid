@@ -2,10 +2,10 @@ package com.example.bursaryaid.feature.student.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.bursaryaid.data.model.ApplicationRepository
-import com.example.bursaryaid.data.model.BursaryApplication
-import com.example.bursaryaid.data.model.BursaryRepository
-import com.example.bursaryaid.data.model.StudentProfileRepository
+import com.example.bursaryaid.model.BursaryApplication
+import com.example.bursaryaid.repository.BursaryApplicationRepository
+import com.example.bursaryaid.repository.BursaryRepository
+import com.example.bursaryaid.repository.StudentProfileRepository
 import com.example.bursaryaid.feature.student.logic.ApplicationRules
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,7 +31,7 @@ class ApplicationDetailsViewModel(
     private val userId: Long,
     selectedApplicationId: Long,
     private val studentProfileRepository: StudentProfileRepository,
-    private val applicationRepository: ApplicationRepository,
+    private val applicationRepository: BursaryApplicationRepository,
     private val bursaryRepository: BursaryRepository
 ) : ViewModel() {
 

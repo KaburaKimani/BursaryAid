@@ -26,4 +26,10 @@ class Converters {
 
     @TypeConverter
     fun toNotificationType(value: String): NotificationType = enumValueOf(value)
+
+    @TypeConverter
+    fun fromStringList(list: List<String>?): String = list?.joinToString(";") ?: ""
+
+    @TypeConverter
+    fun toStringList(data: String?): List<String> = if (data.isNullOrBlank()) emptyList() else data.split(";")
 }

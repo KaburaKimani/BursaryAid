@@ -1,6 +1,6 @@
 package com.example.bursaryaid.feature.student.viewmodel
 
-import com.example.bursaryaid.data.model.ApplicationRepository
+import com.example.bursaryaid.repository.BursaryApplicationRepository
 import com.example.bursaryaid.feature.student.logic.ApplicationRules
 import kotlinx.coroutines.CancellationException
 
@@ -17,7 +17,7 @@ internal fun Throwable.rethrowIfCancellation() {
  * exists once. Returns an error message, or null when the draft was deleted.
  */
 internal suspend fun deleteDraftApplication(
-    repository: ApplicationRepository,
+    repository: BursaryApplicationRepository,
     studentId: Long,
     applicationId: Long
 ): String? {

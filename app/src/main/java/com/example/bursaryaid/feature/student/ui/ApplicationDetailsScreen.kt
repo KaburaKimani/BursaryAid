@@ -34,7 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.bursaryaid.data.model.BursaryApplication
+import com.example.bursaryaid.model.BursaryApplication
 import com.example.bursaryaid.feature.student.viewmodel.ApplicationDetailsViewModel
 
 /**

@@ -14,7 +14,7 @@ interface AppNotificationDao {
     suspend fun insertNotification(notification: AppNotification): Long
 
     @Update
-    suspend fun updateNotification(notification: AppNotification)
+    suspend fun updateNotification(notification: AppNotification): Int
 
     @Query("SELECT * FROM notifications WHERE userId = :userId ORDER BY createdAtMillis DESC")
     fun getNotificationsByUserId(userId: Long): Flow<List<AppNotification>>
@@ -23,5 +23,5 @@ interface AppNotificationDao {
     fun getUnreadCountByUserId(userId: Long): Flow<Int>
 
     @Query("UPDATE notifications SET isRead = 1 WHERE userId = :userId")
-    suspend fun markAllAsRead(userId: Long)
+    suspend fun markAllAsRead(userId: Long): Int
 }

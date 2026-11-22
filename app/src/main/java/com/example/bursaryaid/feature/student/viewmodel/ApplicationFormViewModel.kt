@@ -2,12 +2,12 @@ package com.example.bursaryaid.feature.student.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.bursaryaid.data.model.ApplicationRepository
-import com.example.bursaryaid.data.model.ApplicationStatus
-import com.example.bursaryaid.data.model.BursaryApplication
-import com.example.bursaryaid.data.model.BursaryOpportunity
-import com.example.bursaryaid.data.model.BursaryRepository
-import com.example.bursaryaid.data.model.StudentProfileRepository
+import com.example.bursaryaid.model.ApplicationStatus
+import com.example.bursaryaid.model.Bursary
+import com.example.bursaryaid.model.BursaryApplication
+import com.example.bursaryaid.repository.BursaryApplicationRepository
+import com.example.bursaryaid.repository.BursaryRepository
+import com.example.bursaryaid.repository.StudentProfileRepository
 import com.example.bursaryaid.feature.student.logic.ApplicationRules
 import com.example.bursaryaid.feature.student.logic.FormField
 import com.example.bursaryaid.feature.student.logic.StudentFeatureConstants
@@ -24,7 +24,7 @@ data class ApplicationFormUiState(
     val selectedApplicationId: Long? = null,
     val studentId: Long? = null,
     val bursaryId: Long? = null,
-    val bursaries: List<BursaryOpportunity> = emptyList(),
+    val bursaries: List<Bursary> = emptyList(),
     val academicYear: String = "",
     val requestedAmountKesInput: String = "",
     val applicationReason: String = "",
@@ -52,7 +52,7 @@ class ApplicationFormViewModel(
     private val userId: Long,
     selectedApplicationId: Long?,
     private val studentProfileRepository: StudentProfileRepository,
-    private val applicationRepository: ApplicationRepository,
+    private val applicationRepository: BursaryApplicationRepository,
     private val bursaryRepository: BursaryRepository,
     private val onApplicationSubmitted: suspend (BursaryApplication) -> Unit = {},
     private val currentTimeMillis: () -> Long = { System.currentTimeMillis() }
