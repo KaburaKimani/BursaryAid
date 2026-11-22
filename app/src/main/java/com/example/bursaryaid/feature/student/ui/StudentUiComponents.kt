@@ -4,16 +4,21 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.bursaryaid.data.model.AppConstants
@@ -21,8 +26,6 @@ import com.example.bursaryaid.data.model.ApplicationStatus
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-
-/** Member 1 owns the app-wide reusable components; these are the few extras Member 2's screens need. */
 
 @Composable
 fun StudentLoadingState(modifier: Modifier = Modifier) {
@@ -34,7 +37,7 @@ fun StudentMessageBanner(message: String, isError: Boolean, modifier: Modifier =
     Surface(
         modifier = modifier.fillMaxWidth(),
         color = if (isError) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.secondaryContainer,
-        shape = MaterialTheme.shapes.small
+        shape = RoundedCornerShape(12.dp)
     ) {
         Text(
             text = message,
@@ -52,6 +55,7 @@ fun StudentFormTextField(
     label: String,
     error: String?,
     modifier: Modifier = Modifier,
+    leadingIcon: @Composable (() -> Unit)? = null,
     keyboardType: KeyboardType = KeyboardType.Text,
     singleLine: Boolean = true,
     minLines: Int = 1,
@@ -64,6 +68,13 @@ fun StudentFormTextField(
         label = { Text(label) },
         isError = error != null,
         supportingText = (error ?: helperText)?.let { { Text(it) } },
+        leadingIcon = leadingIcon,
+        shape = RoundedCornerShape(12.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = Color(0xFFCAC4D0),
+            focusedLabelColor = MaterialTheme.colorScheme.primary
+        ),
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         singleLine = singleLine,
         minLines = if (singleLine) 1 else minLines,
@@ -74,7 +85,32 @@ fun StudentFormTextField(
 
 @Composable
 fun StudentStatusChip(applicationStatus: ApplicationStatus, modifier: Modifier = Modifier) {
-    AssistChip(onClick = {}, label = { Text(applicationStatus.displayName()) }, modifier = modifier)
+    val isApproved = applicationStatus == ApplicationStatus.APPROVED
+    val isRejected = applicationStatus == ApplicationStatus.REJECTED
+
+    AssistChip(
+        onClick = {},
+        label = {
+            Text(
+                text = applicationStatus.displayName(),
+                fontWeight = FontWeight.SemiBold
+            )
+        },
+        colors = AssistChipDefaults.assistChipColors(
+            containerColor = when {
+                isApproved -> MaterialTheme.colorScheme.primaryContainer
+                isRejected -> MaterialTheme.colorScheme.errorContainer
+                else -> MaterialTheme.colorScheme.secondaryContainer
+            },
+            labelColor = when {
+                isApproved -> MaterialTheme.colorScheme.onPrimaryContainer
+                isRejected -> MaterialTheme.colorScheme.onErrorContainer
+                else -> MaterialTheme.colorScheme.onSecondaryContainer
+            }
+        ),
+        shape = RoundedCornerShape(8.dp),
+        modifier = modifier
+    )
 }
 
 fun ApplicationStatus.displayName(): String =
