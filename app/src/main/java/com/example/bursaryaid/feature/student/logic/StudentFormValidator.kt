@@ -1,7 +1,7 @@
 package com.example.bursaryaid.feature.student.logic
 
-import com.example.bursaryaid.data.model.AppConstants
-import com.example.bursaryaid.data.model.BursaryOpportunity
+import com.example.bursaryaid.model.AppConstants
+import com.example.bursaryaid.model.Bursary
 
 /**
  * Pure (Android-free) validation so Member 6 can unit test it directly.
@@ -83,7 +83,7 @@ object StudentFormValidator {
      */
     fun validateApplicationForm(
         bursaryId: Long?,
-        bursary: BursaryOpportunity?,
+        bursary: Bursary?,
         academicYear: String,
         requestedAmountKesInput: String,
         applicationReason: String,

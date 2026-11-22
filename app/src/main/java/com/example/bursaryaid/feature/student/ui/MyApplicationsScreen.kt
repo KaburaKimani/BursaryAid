@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
@@ -27,7 +29,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -42,11 +43,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.bursaryaid.data.model.ApplicationStatus
-import com.example.bursaryaid.data.model.BursaryApplication
+import com.example.bursaryaid.model.ApplicationStatus
+import com.example.bursaryaid.model.BursaryApplication
 import com.example.bursaryaid.feature.student.logic.ApplicationRules
 import com.example.bursaryaid.feature.student.viewmodel.MyApplicationsViewModel
 
@@ -195,21 +197,42 @@ private fun ApplicationCard(
     onClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
-    Card(Modifier.fillMaxWidth().clickable(onClick = onClick)) {
-        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(bursaryName, style = MaterialTheme.typography.titleMedium)
-                Text("${application.academicYear.ifBlank { "Academic year not set" }} - ${formatKes(application.requestedAmountKes)}")
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
+        ),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)
+    ) {
+        Row(Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
+                    text = bursaryName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "${application.academicYear.ifBlank { "Academic year not set" }} • ${formatKes(application.requestedAmountKes)}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium
+                )
                 Text(
                     text = application.submittedAtMillis?.let { "Submitted ${formatDateTime(it)}" }
-                        ?: "Not submitted - last edited ${formatDateTime(application.updatedAtMillis)}",
-                    style = MaterialTheme.typography.bodySmall
+                        ?: "Not submitted — last edited ${formatDateTime(application.updatedAtMillis)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                Spacer(Modifier.height(4.dp))
                 StudentStatusChip(application.applicationStatus)
             }
             if (ApplicationRules.canDelete(application.applicationStatus)) {
                 IconButton(onClick = onDeleteClick) {
-                    Icon(Icons.Default.Delete, contentDescription = "Delete draft")
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete draft",
+                        tint = MaterialTheme.colorScheme.error
+                    )
                 }
             }
         }

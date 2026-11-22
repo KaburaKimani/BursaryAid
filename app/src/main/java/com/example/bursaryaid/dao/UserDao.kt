@@ -15,7 +15,7 @@ interface UserDao {
     suspend fun insertUser(user: UserAccount): Long
 
     @Update
-    suspend fun updateUser(user: UserAccount)
+    suspend fun updateUser(user: UserAccount): Int
 
     @Query("SELECT * FROM user_accounts WHERE userId = :userId")
     suspend fun getUserById(userId: Long): UserAccount?

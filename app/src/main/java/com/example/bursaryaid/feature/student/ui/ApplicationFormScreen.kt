@@ -43,7 +43,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.bursaryaid.data.model.ApplicationStatus
+import com.example.bursaryaid.model.ApplicationStatus
 import com.example.bursaryaid.feature.student.logic.FormField
 import com.example.bursaryaid.feature.student.logic.StudentFeatureConstants
 import com.example.bursaryaid.feature.student.viewmodel.ApplicationFormViewModel

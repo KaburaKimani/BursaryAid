@@ -1,13 +1,25 @@
 package com.example.bursaryaid.feature.auth.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -19,6 +31,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.bursaryaid.feature.auth.viewmodel.AuthViewModel
 import com.example.bursaryaid.ui.components.AppButton
@@ -47,25 +61,80 @@ fun RegisterScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Create account", style = MaterialTheme.typography.headlineLarge)
-        Spacer(Modifier.height(24.dp))
+        // Brand Header Banner
+        Card(
+            shape = RoundedCornerShape(20.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 20.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.horizontalGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.primary,
+                                MaterialTheme.colorScheme.tertiary
+                            )
+                        )
+                    )
+                    .padding(20.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+
+                    Spacer(Modifier.padding(start = 14.dp))
+
+                    Column {
+                        Text(
+                            text = "Create Account",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                        Text(
+                            text = "Join Bursary Aid System",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
+                        )
+                    }
+                }
+            }
+        }
 
         AppTextField(
             value = fullName,
             onValueChange = { fullName = it; viewModel.clearMessages() },
-            label = "Full name"
+            label = "Full Name"
         )
         Spacer(Modifier.height(12.dp))
         AppTextField(
             value = email,
             onValueChange = { email = it; viewModel.clearMessages() },
-            label = "Email"
+            label = "Email Address"
         )
         Spacer(Modifier.height(12.dp))
         AppTextField(
             value = phoneNumber,
             onValueChange = { phoneNumber = it; viewModel.clearMessages() },
-            label = "Phone number"
+            label = "Phone Number (e.g. 0712345678)"
         )
         Spacer(Modifier.height(12.dp))
         AppTextField(
@@ -78,15 +147,15 @@ fun RegisterScreen(
         AppTextField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it; viewModel.clearMessages() },
-            label = "Confirm password",
+            label = "Confirm Password",
             isPassword = true
         )
 
         ErrorMessage(viewModel.errorMessage)
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(16.dp))
         AppButton(
-            text = "Register",
+            text = "Register Account",
             isLoading = viewModel.isLoading,
             onClick = {
                 if (viewModel.registerUser(fullName, email, phoneNumber, password, confirmPassword)) {
@@ -95,11 +164,16 @@ fun RegisterScreen(
             }
         )
 
+        Spacer(Modifier.height(8.dp))
         TextButton(onClick = {
             viewModel.clearMessages()
             onNavigateToLogin()
         }) {
-            Text("Already have an account? Log in")
+            Text(
+                "Already have an account? Log In",
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
     }
 }

@@ -8,13 +8,22 @@ class StudentProfileRepository(private val studentProfileDao: StudentProfileDao)
     suspend fun insertOrUpdateProfile(profile: StudentProfile): Long =
         studentProfileDao.insertOrUpdateProfile(profile)
 
+    suspend fun insertStudentProfile(profile: StudentProfile): Long =
+        studentProfileDao.insertOrUpdateProfile(profile)
+
     suspend fun updateProfile(profile: StudentProfile) =
+        studentProfileDao.updateProfile(profile)
+
+    suspend fun updateStudentProfile(profile: StudentProfile) =
         studentProfileDao.updateProfile(profile)
 
     suspend fun getProfileById(studentId: Long): StudentProfile? =
         studentProfileDao.getProfileById(studentId)
 
     suspend fun getProfileByUserId(userId: Long): StudentProfile? =
+        studentProfileDao.getProfileByUserId(userId)
+
+    suspend fun getStudentProfile(userId: Long): StudentProfile? =
         studentProfileDao.getProfileByUserId(userId)
 
     fun getProfileByUserIdFlow(userId: Long): Flow<StudentProfile?> =

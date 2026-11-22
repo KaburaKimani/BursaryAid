@@ -2,8 +2,8 @@ package com.example.bursaryaid.feature.student.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.bursaryaid.data.model.StudentProfile
-import com.example.bursaryaid.data.model.StudentProfileRepository
+import com.example.bursaryaid.model.StudentProfile
+import com.example.bursaryaid.repository.StudentProfileRepository
 import com.example.bursaryaid.feature.student.logic.FormField
 import com.example.bursaryaid.feature.student.logic.StudentFormValidator
 import kotlinx.coroutines.flow.MutableStateFlow

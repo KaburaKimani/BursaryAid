@@ -9,9 +9,11 @@ data class BursaryApplication(
     val applicationId: Long = 0L,
     val bursaryId: Long,
     val studentId: Long,
-    val requestedAmount: Double,
-    val justificationReason: String,
-    val applicationStatus: ApplicationStatus,
-    val submittedAtMillis: Long,
-    val lastUpdatedAtMillis: Long
+    val academicYear: String = "",
+    val requestedAmountKes: Long = 0L,
+    val applicationStatus: ApplicationStatus = ApplicationStatus.DRAFT,
+    val applicationReason: String = "",
+    val supportingDocuments: List<String> = emptyList(),
+    val submittedAtMillis: Long? = null,
+    val updatedAtMillis: Long = System.currentTimeMillis()
 )

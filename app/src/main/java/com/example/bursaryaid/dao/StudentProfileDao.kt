@@ -14,7 +14,7 @@ interface StudentProfileDao {
     suspend fun insertOrUpdateProfile(profile: StudentProfile): Long
 
     @Update
-    suspend fun updateProfile(profile: StudentProfile)
+    suspend fun updateProfile(profile: StudentProfile): Int
 
     @Query("SELECT * FROM student_profiles WHERE studentId = :studentId")
     suspend fun getProfileById(studentId: Long): StudentProfile?

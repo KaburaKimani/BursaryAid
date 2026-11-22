@@ -26,4 +26,7 @@ class BursaryApplicationRepository(private val bursaryApplicationDao: BursaryApp
 
     fun getApplicationsByStatus(status: ApplicationStatus): Flow<List<BursaryApplication>> =
         bursaryApplicationDao.getApplicationsByStatus(status)
+
+    suspend fun deleteApplication(applicationId: Long) =
+        bursaryApplicationDao.deleteApplication(applicationId)
 }

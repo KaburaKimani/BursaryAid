@@ -1,14 +1,15 @@
-package com.example.bursaryaid.ui.notifications
+package com.example.bursaryaid.notifications
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.bursaryaid.data.model.AppNotification
+import com.example.bursaryaid.model.AppNotification
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,18 +80,18 @@ fun NotificationCard(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = notification.notificationTitle,
+                    text = notification.title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = notification.notificationMessage,
+                    text = notification.message,
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Type: ${notification.notificationType.name}",
+                    text = "Type: ${notification.type.name}",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

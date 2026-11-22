@@ -7,11 +7,12 @@ import androidx.room.PrimaryKey
 data class Bursary(
     @PrimaryKey(autoGenerate = true)
     val bursaryId: Long = 0L,
-    val title: String,
-    val description: String,
-    val totalBudget: Double,
-    val remainingBudget: Double,
-    val maxAmountPerStudent: Double,
+    val bursaryName: String,
+    val bursaryDescription: String,
+    val fundingOrganization: String = "",
+    val totalBudgetKes: Long = 0L,
+    val minimumIncomeKes: Long = 0L,
+    val maximumAwardKes: Long = 0L,
     val applicationDeadlineMillis: Long,
-    val isOpen: Boolean
+    val isBursaryOpen: Boolean = true
 )
