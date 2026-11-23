@@ -16,7 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -104,7 +104,7 @@ fun AdminBursaryOverviewScreen(
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer)
                             }
-                            Icon(Icons.Default.Groups, contentDescription = null,
+                            Icon(Icons.Default.AccountBox, contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer)
                         }
                     }
