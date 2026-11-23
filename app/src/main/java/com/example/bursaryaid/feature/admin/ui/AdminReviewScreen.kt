@@ -139,7 +139,7 @@ private fun ReviewBody(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Review application",
+                text = "Application review",
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.weight(1f).padding(end = 8.dp)
             )
@@ -218,7 +218,7 @@ private fun ReviewBody(
                         label = "Reason (required to reject)",
                         errorText = state.formErrors[DecisionForm.FIELD_REASON]
                     )
-                    AppButton(text = "Approve", onClick = onApprove, isLoading = state.isSaving)
+                    AppButton(text = "Accept application", onClick = onApprove, isLoading = state.isSaving)
                     OutlinedButton(
                         onClick = onReject,
                         enabled = !state.isSaving,
