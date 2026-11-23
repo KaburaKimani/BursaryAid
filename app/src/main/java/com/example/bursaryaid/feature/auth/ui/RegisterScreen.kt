@@ -51,7 +51,7 @@ fun RegisterScreen(
     var phoneNumber by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    var isAdministrator by remember { mutableStateOf(false) }
+    val isAdministrator = viewModel.isAdminMode
 
     LaunchedEffect(Unit) { viewModel.clearMessages() }
 
@@ -131,13 +131,13 @@ fun RegisterScreen(
         ) {
             FilterChip(
                 selected = !isAdministrator,
-                onClick = { isAdministrator = false; viewModel.clearMessages() },
+                onClick = { viewModel.setAdminMode(false) },
                 label = { Text("👤 Student Account") },
                 modifier = Modifier.weight(1f)
             )
             FilterChip(
                 selected = isAdministrator,
-                onClick = { isAdministrator = true; viewModel.clearMessages() },
+                onClick = { viewModel.setAdminMode(true) },
                 label = { Text("🛡️ Administrator") },
                 modifier = Modifier.weight(1f)
             )

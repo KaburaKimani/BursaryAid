@@ -1,4 +1,3 @@
-
 package com.example.bursaryaid.feature.admin.ui
 
 import androidx.compose.foundation.clickable
@@ -173,6 +172,8 @@ fun AdminBursaryOverviewScreen(
                     key = { it.bursary.bursaryId }
                 ) { item ->
 
+                    val isActive = item.bursary.isAcceptingApplications()
+
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -205,13 +206,13 @@ fun AdminBursaryOverviewScreen(
                                 )
 
                                 Text(
-                                    text = if (item.bursary.isBursaryOpen) {
-                                        "OPEN"
+                                    text = if (isActive) {
+                                        "ACTIVE"
                                     } else {
                                         "CLOSED"
                                     },
                                     style = MaterialTheme.typography.labelMedium,
-                                    color = if (item.bursary.isBursaryOpen) {
+                                    color = if (isActive) {
                                         MaterialTheme.colorScheme.primary
                                     } else {
                                         MaterialTheme.colorScheme.error
@@ -223,6 +224,16 @@ fun AdminBursaryOverviewScreen(
                             Text(
                                 text = "Sponsor: ${item.bursary.fundingOrganization}",
                                 style = MaterialTheme.typography.bodyMedium
+                            )
+
+                            Text(
+                                text = if (isActive) {
+                                    "Deadline: ${formatDate(item.bursary.applicationDeadlineMillis)}"
+                                } else {
+                                    "Closed on ${formatDate(item.bursary.applicationDeadlineMillis)}"
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
 
                             Row(
@@ -274,7 +285,7 @@ fun AdminBursaryOverviewScreen(
                                 )
 
                                 SummaryCount(
-                                    label = "Approved",
+                                    label = "Accepted",
                                     count = item.approvedCount,
                                     tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.weight(1f)

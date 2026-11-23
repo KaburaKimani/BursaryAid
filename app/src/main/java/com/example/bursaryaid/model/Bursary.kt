@@ -15,4 +15,11 @@ data class Bursary(
     val maximumAwardKes: Long = 0L,
     val applicationDeadlineMillis: Long,
     val isBursaryOpen: Boolean = true
-)
+) {
+    /**
+     * A bursary is ACTIVE only while it is switched on AND its deadline has not passed.
+     * After the deadline it is treated as closed everywhere (student and admin).
+     */
+    fun isAcceptingApplications(nowMillis: Long = System.currentTimeMillis()): Boolean =
+        isBursaryOpen && applicationDeadlineMillis >= nowMillis
+}

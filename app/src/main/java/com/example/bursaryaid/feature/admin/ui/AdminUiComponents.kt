@@ -25,8 +25,10 @@ import java.util.Locale
 fun formatKes(amountKes: Long): String = "KSh " + "%,d".format(Locale.US, amountKes)
 
 /** UNDER_REVIEW -> "Under review". Built from the enum name so it never goes out of date. */
-fun formatStatusLabel(status: ApplicationStatus): String =
-    status.name.lowercase().replace('_', ' ').replaceFirstChar { it.uppercase() }
+fun formatStatusLabel(status: ApplicationStatus): String = when (status) {
+    ApplicationStatus.APPROVED -> "Accepted"
+    else -> status.name.lowercase().replace('_', ' ').replaceFirstChar { it.uppercase() }
+}
 
 fun formatDate(millis: Long): String =
     SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(Date(millis))

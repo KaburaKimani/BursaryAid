@@ -15,6 +15,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -40,6 +41,13 @@ fun AdminReviewScreen(
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsState()
+
+    // Opening a newly submitted application starts its review automatically,
+    // so the Accept / Reject choices are available straight away.
+    LaunchedEffect(state.canStartReview) {
+        if (state.canStartReview) viewModel.startReview()
+    }
+
     AdminReviewContent(
         state = state,
         onBack = onBack,

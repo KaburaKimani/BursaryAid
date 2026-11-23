@@ -248,7 +248,7 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
     var passwordTouched by remember { mutableStateOf(false) }
-    var isAdministrator by remember { mutableStateOf(false) }
+    val isAdministrator = viewModel.isAdminMode
 
     val focusManager = LocalFocusManager.current
 
@@ -325,13 +325,13 @@ fun LoginScreen(
             ) {
                 FilterChip(
                     selected = !isAdministrator,
-                    onClick = { isAdministrator = false; viewModel.clearMessages() },
+                    onClick = { viewModel.setAdminMode(false) },
                     label = { Text("👤 Student") },
                     modifier = Modifier.weight(1f)
                 )
                 FilterChip(
                     selected = isAdministrator,
-                    onClick = { isAdministrator = true; viewModel.clearMessages() },
+                    onClick = { viewModel.setAdminMode(true) },
                     label = { Text("🛡️ Administrator") },
                     modifier = Modifier.weight(1f)
                 )
@@ -430,7 +430,7 @@ fun LoginScreen(
                             onDone = {
                                 if (isFormValid && !viewModel.isLoading) {
                                     focusManager.clearFocus()
-                                    viewModel.loginUser(email, password, onLoginSuccess)
+                                    viewModel.loginUser(email, password, isAdministrator, onLoginSuccess)
                                 }
                             }
                         ),
@@ -454,7 +454,7 @@ fun LoginScreen(
                         Button(
                             onClick = {
                                 focusManager.clearFocus()
-                                viewModel.loginUser(email, password, onLoginSuccess)
+                                viewModel.loginUser(email, password, isAdministrator, onLoginSuccess)
                             },
                             enabled = isFormValid && !viewModel.isLoading,
                             interactionSource = buttonInteractionSource,

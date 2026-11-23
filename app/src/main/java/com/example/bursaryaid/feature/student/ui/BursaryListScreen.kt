@@ -1,4 +1,3 @@
-
 package com.example.bursaryaid.feature.bursary.ui
 
 import androidx.compose.foundation.clickable
@@ -132,6 +131,8 @@ fun BursaryListScreen(
                         key = { it.bursaryId }
                     ) { bursary ->
 
+                        val isActive = bursary.isAcceptingApplications()
+
                         Card(
                             shape = RoundedCornerShape(16.dp),
 
@@ -171,6 +172,17 @@ fun BursaryListScreen(
                                         fontWeight = FontWeight.Bold,
                                         modifier = Modifier.weight(1f)
                                     )
+
+                                    Text(
+                                        text = if (isActive) "ACTIVE" else "CLOSED",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isActive) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            MaterialTheme.colorScheme.error
+                                        }
+                                    )
                                 }
 
                                 Spacer(Modifier.height(4.dp))
@@ -199,7 +211,7 @@ fun BursaryListScreen(
                                     )
 
                                     Text(
-                                        text = if (bursary.isBursaryOpen) {
+                                        text = if (isActive) {
                                             "Deadline: ${
                                                 dateFormat.format(
                                                     Date(bursary.applicationDeadlineMillis)
@@ -213,7 +225,7 @@ fun BursaryListScreen(
 
                                         style = MaterialTheme.typography.bodySmall,
 
-                                        color = if (bursary.isBursaryOpen) {
+                                        color = if (isActive) {
                                             MaterialTheme.colorScheme.primary
                                         } else {
                                             MaterialTheme.colorScheme.error

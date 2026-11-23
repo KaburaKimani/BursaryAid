@@ -1,4 +1,3 @@
-
 package com.example.bursaryaid.feature.bursary.ui
 
 import androidx.compose.foundation.layout.Column
@@ -84,6 +83,9 @@ fun BursaryDetailsScreen(
             val dateFormat =
                 SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
 
+            // Active only while switched on AND before the deadline.
+            val isActive = bursary.isAcceptingApplications()
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -131,13 +133,13 @@ fun BursaryDetailsScreen(
                 )
 
                 Text(
-                    if (bursary.isBursaryOpen) {
-                        "Status: Open"
+                    if (isActive) {
+                        "Status: Active"
                     } else {
                         "Status: Closed"
                     },
 
-                    color = if (bursary.isBursaryOpen) {
+                    color = if (isActive) {
                         MaterialTheme.colorScheme.primary
                     } else {
                         MaterialTheme.colorScheme.error
@@ -151,16 +153,16 @@ fun BursaryDetailsScreen(
                         onApply(bursary.bursaryId)
                     },
 
-                    enabled = bursary.isBursaryOpen,
+                    enabled = isActive,
 
                     modifier = Modifier.fillMaxWidth()
                 ) {
 
                     Text(
-                        if (bursary.isBursaryOpen) {
+                        if (isActive) {
                             "Apply for this bursary"
                         } else {
-                            "Applications closed"
+                            "Applications closed (deadline passed)"
                         }
                     )
                 }

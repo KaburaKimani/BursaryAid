@@ -160,8 +160,10 @@ private fun getStatusStyle(status: ApplicationStatus): Triple<Color, Color, Imag
     }
 }
 
-fun ApplicationStatus.displayName(): String =
-    name.lowercase(Locale.ROOT).replace('_', ' ').replaceFirstChar { it.uppercase() }
+fun ApplicationStatus.displayName(): String = when (this) {
+    ApplicationStatus.APPROVED -> "Accepted"
+    else -> name.lowercase(Locale.ROOT).replace('_', ' ').replaceFirstChar { it.uppercase() }
+}
 
 fun formatKes(amountKes: Long): String = "${AppConstants.CURRENCY_CODE} ${"%,d".format(Locale.US, amountKes)}"
 

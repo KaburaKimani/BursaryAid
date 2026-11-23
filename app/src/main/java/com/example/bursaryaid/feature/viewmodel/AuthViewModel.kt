@@ -1,4 +1,3 @@
-
 package com.example.bursaryaid.feature.auth.viewmodel
 
 import android.database.sqlite.SQLiteConstraintException
@@ -38,6 +37,12 @@ class AuthViewModel(
         private set
 
     var currentUserEmail by mutableStateOf("")
+        private set
+
+    // Student / Administrator toggle shared by the Login and Register screens,
+    // so the role chosen on Login is still selected after tapping "Sign Up".
+    @set:JvmName("setAdminModeProperty")
+    var isAdminMode by mutableStateOf(false)
         private set
 
     var isLoading by mutableStateOf(false)
@@ -95,6 +100,7 @@ class AuthViewModel(
     fun loginUser(
         email: String,
         password: String,
+        asAdmin: Boolean = false,
         onSuccess: (isAdmin: Boolean) -> Unit
     ) {
 
@@ -128,6 +134,18 @@ class AuthViewModel(
 
                     !user.isAccountActive -> {
                         errorMessage = "This account has been deactivated"
+                    }
+
+                    // The sign-in tab chosen (Student / Administrator) must match the
+                    // role stored on the account, otherwise the user is told which tab to use.
+                    asAdmin && user.userRole != UserRole.ADMIN -> {
+                        errorMessage =
+                            "This is a student account. Switch to Student sign in."
+                    }
+
+                    !asAdmin && user.userRole == UserRole.ADMIN -> {
+                        errorMessage =
+                            "This is an administrator account. Switch to Administrator sign in."
                     }
 
                     else -> {
@@ -258,6 +276,13 @@ class AuthViewModel(
         currentUserName = ""
         currentUserEmail = ""
 
+        errorMessage = null
+        successMessage = null
+    }
+
+    fun setAdminMode(admin: Boolean) {
+
+        isAdminMode = admin
         errorMessage = null
         successMessage = null
     }
