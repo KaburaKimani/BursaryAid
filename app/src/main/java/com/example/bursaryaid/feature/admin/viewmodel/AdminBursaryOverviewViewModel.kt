@@ -14,28 +14,31 @@ import kotlinx.coroutines.flow.stateIn
 
 data class BursaryOverviewItem(
     val bursary: Bursary,
-    val applicantCount: Int
+    val applicantCount: Int,
+    val pendingCount: Int,
+    val approvedCount: Int,
+    val rejectedCount: Int
 )
 
 class AdminBursaryOverviewViewModel(
     bursaryRepository: BursaryRepository,
     applicationRepository: BursaryApplicationRepository
 ) : ViewModel() {
-
     val bursaryOverviews: StateFlow<List<BursaryOverviewItem>> =
-        combine(
-            bursaryRepository.getAllBursaries(),
-            applicationRepository.getAllApplications()
-        ) { bursaries, applications ->
-            val counts = applications
-                .filter { it.applicationStatus != ApplicationStatus.DRAFT }
-                .groupBy { it.bursaryId }
-                .mapValues { entry -> entry.value.map { it.studentId }.distinct().size }
-
+        combine(bursaryRepository.getAllBursaries(), applicationRepository.getAllApplications()) { bursaries, applications ->
             bursaries.map { bursary ->
+                val submitted = applications.filter {
+                    it.bursaryId == bursary.bursaryId && it.applicationStatus != ApplicationStatus.DRAFT
+                }
+                fun count(statuses: Set<ApplicationStatus>) = submitted
+                    .filter { it.applicationStatus in statuses }.map { it.studentId }.distinct().size
+
                 BursaryOverviewItem(
                     bursary = bursary,
-                    applicantCount = counts[bursary.bursaryId] ?: 0
+                    applicantCount = submitted.map { it.studentId }.distinct().size,
+                    pendingCount = count(setOf(ApplicationStatus.SUBMITTED, ApplicationStatus.UNDER_REVIEW, ApplicationStatus.NEEDS_INFORMATION)),
+                    approvedCount = count(setOf(ApplicationStatus.APPROVED)),
+                    rejectedCount = count(setOf(ApplicationStatus.REJECTED))
                 )
             }
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
