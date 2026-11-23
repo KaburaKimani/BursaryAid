@@ -46,7 +46,7 @@ import com.example.bursaryaid.feature.student.viewmodel.ApplicationDetailsViewMo
 @Composable
 fun ApplicationDetailsScreen(
     viewModel: ApplicationDetailsViewModel,
-    onEditApplication: (applicationId: Long) -> Unit,
+    onEditApplication: (applicationId: Long, bursaryId: Long) -> Unit,
     onApplicationDeleted: () -> Unit,
     onNavigateBack: () -> Unit
 ) {
@@ -124,7 +124,12 @@ fun ApplicationDetailsScreen(
                         }
                         if (state.canEdit) {
                             Button(
-                                onClick = { onEditApplication(application.applicationId) },
+                                onClick = {
+                                    onEditApplication(
+                                        application.applicationId,
+                                        application.bursaryId
+                                    )
+                                },
                                 enabled = !state.isLoading,
                                 modifier = Modifier.weight(1f)
                             ) { Text(if (state.canDelete) "Edit draft" else "Update application") }

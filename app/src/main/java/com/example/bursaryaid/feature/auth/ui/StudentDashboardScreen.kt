@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -37,6 +38,10 @@ import com.example.bursaryaid.ui.components.InteractiveActionCard
 
 @Composable
 fun StudentDashboardScreen(
+    userName: String,
+    userEmail: String,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit,
     onMyApplications: () -> Unit,
     onNewApplication: () -> Unit,
     onProfile: () -> Unit,
@@ -49,6 +54,50 @@ fun StudentDashboardScreen(
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Medium-Small Welcome Banner with User Name & Login ID
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Welcome, ${userName.ifBlank { "Student" }}",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = "Signed in as: ${userEmail.ifBlank { "student@bursaryaid.com" }}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                    )
+                }
+
+                // Theme Toggle Button using Android Vector Icon instead of emoji
+                OutlinedButton(
+                    onClick = onToggleTheme,
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Toggle theme",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.padding(start = 6.dp))
+                    Text(if (isDarkTheme) "Light" else "Dark", style = MaterialTheme.typography.labelMedium)
+                }
+            }
+        }
+
         // Hero Header Card with gradient background
         Card(
             shape = RoundedCornerShape(24.dp),
@@ -111,7 +160,7 @@ fun StudentDashboardScreen(
         }
 
         Text(
-            text = "Quick Actions",
+            text = "Quick Actions & Settings",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(start = 4.dp, top = 8.dp)

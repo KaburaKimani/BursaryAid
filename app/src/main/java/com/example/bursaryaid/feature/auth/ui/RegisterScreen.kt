@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -50,6 +51,7 @@ fun RegisterScreen(
     var phoneNumber by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var isAdministrator by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { viewModel.clearMessages() }
 
@@ -74,10 +76,11 @@ fun RegisterScreen(
                     .fillMaxWidth()
                     .background(
                         Brush.horizontalGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.primary,
-                                MaterialTheme.colorScheme.tertiary
-                            )
+                            colors = if (isAdministrator) {
+                                listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary)
+                            } else {
+                                listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.tertiary)
+                            }
                         )
                     )
                     .padding(20.dp)
@@ -104,19 +107,40 @@ fun RegisterScreen(
 
                     Column {
                         Text(
-                            text = "Create Account",
+                            text = if (isAdministrator) "Admin Registration" else "Student Registration",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                         Text(
-                            text = "Join Bursary Aid System",
+                            text = "Bursary Aid System",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
                         )
                     }
                 }
             }
+        }
+
+        // Role Selector Chips (Coexisting Student and Admin Registration)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            FilterChip(
+                selected = !isAdministrator,
+                onClick = { isAdministrator = false; viewModel.clearMessages() },
+                label = { Text("👤 Student Account") },
+                modifier = Modifier.weight(1f)
+            )
+            FilterChip(
+                selected = isAdministrator,
+                onClick = { isAdministrator = true; viewModel.clearMessages() },
+                label = { Text("🛡️ Administrator") },
+                modifier = Modifier.weight(1f)
+            )
         }
 
         AppTextField(
@@ -155,11 +179,16 @@ fun RegisterScreen(
 
         Spacer(Modifier.height(16.dp))
         AppButton(
-            text = "Register Account",
+            text = if (isAdministrator) "Register as Administrator" else "Register Account",
             isLoading = viewModel.isLoading,
             onClick = {
                 viewModel.registerUser(
-                    fullName, email, phoneNumber, password, confirmPassword
+                    fullName = fullName,
+                    email = email,
+                    phoneNumber = phoneNumber,
+                    password = password,
+                    confirmPassword = confirmPassword,
+                    asAdmin = isAdministrator
                 ) {
                     onRegisterSuccess()
                 }

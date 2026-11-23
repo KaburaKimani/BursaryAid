@@ -1,27 +1,55 @@
+
 package com.example.bursaryaid.data.remote
+
+import com.example.bursaryaid.BuildConfig
 
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+
 import java.util.concurrent.TimeUnit
 
 object ApiClient {
-    // Mock URL for now. Member 4 can swap this with the real endpoint later.
-    private const val BASE_URL = "https://mock-api.com/api/"
 
-    private val client = OkHttpClient.Builder()
-        .connectTimeout(10, TimeUnit.SECONDS)
-        .readTimeout(15, TimeUnit.SECONDS)
-        .addInterceptor(HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BASIC
-        })
-        .build()
+    private val client: OkHttpClient by lazy {
 
-    val service: BursaryApiService = Retrofit.Builder()
-        .baseUrl(BASE_URL)
-        .client(client)
-        .addConverterFactory(MoshiConverterFactory.create())
-        .build()
-        .create(BursaryApiService::class.java)
+        val logging = HttpLoggingInterceptor().apply {
+
+            level = if (BuildConfig.DEBUG) {
+                HttpLoggingInterceptor.Level.BASIC
+            } else {
+                HttpLoggingInterceptor.Level.NONE
+            }
+        }
+
+        OkHttpClient.Builder()
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(20, TimeUnit.SECONDS)
+            .writeTimeout(20, TimeUnit.SECONDS)
+            .addInterceptor(logging)
+            .build()
+    }
+
+    val service: BursaryApiService by lazy {
+
+        val baseUrl = BuildConfig.BURSARY_API_BASE_URL
+
+        require(
+            baseUrl.startsWith("https://") ||
+                    baseUrl.startsWith("http://")
+        ) {
+            "A valid API base URL must be configured."
+        }
+
+        Retrofit.Builder()
+            .baseUrl(baseUrl)
+            .client(client)
+            .addConverterFactory(
+                MoshiConverterFactory.create()
+            )
+            .build()
+            .create(BursaryApiService::class.java)
+    }
 }

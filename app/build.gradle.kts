@@ -1,3 +1,4 @@
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -15,7 +16,12 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner =
+            "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "DEFAULT_ADMIN_EMAIL", "\"admin@bursaryaid.com\"")
+        buildConfigField("String", "DEFAULT_ADMIN_PASSWORD", "\"Admin123!\"")
+        buildConfigField("String", "BURSARY_API_BASE_URL", "\"https://api.bursaryaid.example.com/\"")
     }
 
     buildTypes {
@@ -23,16 +29,26 @@ android {
             isMinifyEnabled = false
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     buildFeatures {
         compose = true
+        buildConfig = true
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
     }
 }
 
 dependencies {
+    // Jetpack Compose
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
@@ -42,7 +58,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
-    // UI, auth, navigation
+    // UI, Authentication and Navigation
     implementation("androidx.compose.material:material-icons-core")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.6")
@@ -50,22 +66,34 @@ dependencies {
 
     // Room Database
     val room_version = "2.8.5"
+
     implementation("androidx.room:room-runtime:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
     ksp("androidx.room:room-compiler:$room_version")
 
-    // Member 5 — Notifications & API
+    // Background Tasks
     implementation("androidx.work:work-runtime-ktx:2.9.0")
+
+    // Retrofit API Communication
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-moshi:2.11.0")
+
+    // OkHttp
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // Moshi JSON
     implementation("com.squareup.moshi:moshi-kotlin:1.15.1")
 
+    // Unit Testing
     testImplementation(libs.junit)
+
+    // Android Instrumentation Testing
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+
+    // Debugging
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }

@@ -4,12 +4,12 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,6 +24,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -46,20 +47,15 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.example.bursaryaid.feature.auth.viewmodel.AuthViewModel
 import com.example.bursaryaid.ui.components.ErrorMessage
 import com.example.bursaryaid.ui.components.SuccessMessage
-import com.example.bursaryaid.ui.theme.DarkPurpleBg
-import com.example.bursaryaid.ui.theme.DarkPurpleSurface
 import com.example.bursaryaid.ui.theme.DisabledPurple
 import com.example.bursaryaid.ui.theme.IndigoPurple
 import com.example.bursaryaid.ui.theme.LightLavender
@@ -252,9 +248,9 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
     var passwordTouched by remember { mutableStateOf(false) }
+    var isAdministrator by remember { mutableStateOf(false) }
 
     val focusManager = LocalFocusManager.current
-    val isDark = isSystemInDarkTheme()
 
     // Inline validation checks
     val isEmailValid = email.isNotBlank() && EMAIL_REGEX.matches(email.trim())
@@ -274,12 +270,8 @@ fun LoginScreen(
         label = "login_button_scale"
     )
 
-    // Background gradient: light lavender to white (or dark purple gradient in dark mode)
-    val backgroundGradient = if (isDark) {
-        Brush.verticalGradient(listOf(DarkPurpleBg, DarkPurpleSurface))
-    } else {
-        Brush.verticalGradient(listOf(LightLavender, Color.White))
-    }
+    // Background gradient: light lavender to white (Always Light Mode for auth screens)
+    val backgroundGradient = Brush.verticalGradient(listOf(LightLavender, Color.White))
 
     // Gradient or faded purple for button background
     val buttonBrush = if (isFormValid && !viewModel.isLoading) {
@@ -317,12 +309,33 @@ fun LoginScreen(
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
-                text = "Log in to continue",
+                text = if (isAdministrator) "Administrator Sign In" else "Student Log In",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(20.dp))
+
+            // Role Selector Chips (Coexisting Student and Admin Login)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                FilterChip(
+                    selected = !isAdministrator,
+                    onClick = { isAdministrator = false; viewModel.clearMessages() },
+                    label = { Text("👤 Student") },
+                    modifier = Modifier.weight(1f)
+                )
+                FilterChip(
+                    selected = isAdministrator,
+                    onClick = { isAdministrator = true; viewModel.clearMessages() },
+                    label = { Text("🛡️ Administrator") },
+                    modifier = Modifier.weight(1f)
+                )
+            }
 
             SuccessMessage(viewModel.successMessage)
 
@@ -331,7 +344,7 @@ fun LoginScreen(
                 shape = RoundedCornerShape(16.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isDark) DarkPurpleSurface else Color.White
+                    containerColor = Color.White
                 ),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -346,7 +359,7 @@ fun LoginScreen(
                             email = it
                             viewModel.clearMessages()
                         },
-                        label = { Text("Email") },
+                        label = { Text(if (isAdministrator) "Admin Email" else "Student Email") },
                         singleLine = true,
                         isError = emailError != null,
                         supportingText = emailError?.let { { Text(it) } },
@@ -454,38 +467,34 @@ fun LoginScreen(
                         ) {
                             if (viewModel.isLoading) {
                                 CircularProgressIndicator(
-                                    modifier = Modifier.size(20.dp),
+                                    modifier = Modifier.size(24.dp),
                                     color = Color.White,
                                     strokeWidth = 2.5.dp
                                 )
                             } else {
                                 Text(
-                                    text = "Log in",
+                                    text = if (isAdministrator) "Sign In as Administrator" else "Log In",
+                                    style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isFormValid && !viewModel.isLoading) Color.White else Color.White.copy(alpha = 0.8f)
+                                    color = Color.White
                                 )
                             }
                         }
                     }
-                }
-            }
 
-            Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(8.dp))
 
-            // "No account? Register" plain text with "Register" bold in primary purple
-            TextButton(onClick = onNavigateToRegister) {
-                val annotatedString = buildAnnotatedString {
-                    append("No account? ")
-                    withStyle(
-                        style = SpanStyle(
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold
+                    TextButton(onClick = {
+                        viewModel.clearMessages()
+                        onNavigateToRegister()
+                    }) {
+                        Text(
+                            "Don't have an account? Sign Up",
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary
                         )
-                    ) {
-                        append("Register")
                     }
                 }
-                Text(text = annotatedString, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
