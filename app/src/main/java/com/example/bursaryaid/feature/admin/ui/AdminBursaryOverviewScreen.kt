@@ -10,12 +10,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -43,11 +46,12 @@ fun AdminBursaryOverviewScreen(
     onBack: () -> Unit
 ) {
     val overviews by viewModel.bursaryOverviews.collectAsStateWithLifecycle()
+    val totalApplicants = overviews.sumOf { it.applicantCount }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Bursary Opportunities & Applicants") },
+                title = { Text("Bursary management") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -57,7 +61,7 @@ fun AdminBursaryOverviewScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = onCreateBursary) {
-                Icon(Icons.Default.Add, contentDescription = "Create Bursary")
+                Icon(Icons.Default.Add, contentDescription = "Create bursary")
             }
         }
     ) { padding ->
@@ -67,52 +71,97 @@ fun AdminBursaryOverviewScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("No bursary opportunities published yet.", style = MaterialTheme.typography.bodyLarge)
-                Spacer(Modifier.height(12.dp))
-                Text("Tap the + button below to create one.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("No bursary opportunities yet.", style = MaterialTheme.typography.titleMedium)
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "Create a bursary to publish an opportunity and start receiving applications.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         } else {
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
+                modifier = Modifier.fillMaxSize().padding(padding),
                 contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
+                item {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(18.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text("ADMIN OVERVIEW", style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer)
+                                Text("${overviews.size} bursaries", style = MaterialTheme.typography.headlineSmall,
+                                    fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                                Text("${totalApplicants} applications received",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            }
+                            Icon(Icons.Default.Groups, contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                        }
+                    }
+                }
+                item {
+                    Text("Published opportunities", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text("Select a bursary to review its applicants and make decisions.",
+                        style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
                 items(overviews, key = { it.bursary.bursaryId }) { item ->
                     Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onSelectBursary(item.bursary.bursaryId) }
+                        modifier = Modifier.fillMaxWidth().clickable { onSelectBursary(item.bursary.bursaryId) },
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    text = item.bursary.bursaryName,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.weight(1f).padding(end = 8.dp)
-                                )
-                                StatusBadge(if (item.bursary.isBursaryOpen) com.example.bursaryaid.model.ApplicationStatus.APPROVED else com.example.bursaryaid.model.ApplicationStatus.REJECTED)
+                                Text(item.bursary.bursaryName, style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f).padding(end = 8.dp))
+                                Text(if (item.bursary.isBursaryOpen) "OPEN" else "CLOSED",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = if (item.bursary.isBursaryOpen) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                                    fontWeight = FontWeight.Bold)
                             }
-                            Spacer(Modifier.height(4.dp))
                             Text("Sponsor: ${item.bursary.fundingOrganization}", style = MaterialTheme.typography.bodyMedium)
-                            Spacer(Modifier.height(8.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text("Budget: ${formatKes(item.bursary.totalBudgetKes)}", style = MaterialTheme.typography.bodySmall)
-                                Text("Applicants: ${item.applicantCount} student(s)", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Column {
+                                    Text("Applicants", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text(item.applicantCount.toString(), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                                }
+                                Column(horizontalAlignment = Alignment.End) {
+                                    Text("Total budget", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text(formatKes(item.bursary.totalBudgetKes), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                                }
                             }
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                SummaryCount("Pending", item.pendingCount, MaterialTheme.colorScheme.tertiary, Modifier.weight(1f))
+                                SummaryCount("Approved", item.approvedCount, MaterialTheme.colorScheme.primary, Modifier.weight(1f))
+                                SummaryCount("Rejected", item.rejectedCount, MaterialTheme.colorScheme.error, Modifier.weight(1f))
+                            }
+                            Text("View applicants  →", color = MaterialTheme.colorScheme.primary,
+                                style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun SummaryCount(label: String, count: Int, tint: androidx.compose.ui.graphics.Color, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        Text(count.toString(), color = tint, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
