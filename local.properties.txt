@@ -1,0 +1,1 @@
+sdk.dir=C:/Users/keliz/AppData/Local/Android/Sdk

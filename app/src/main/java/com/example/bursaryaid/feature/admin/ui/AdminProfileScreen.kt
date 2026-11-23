@@ -1,3 +1,4 @@
+
 package com.example.bursaryaid.feature.admin.ui
 
 import androidx.compose.foundation.background
@@ -16,7 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AdminPanelSettings
+import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
@@ -59,68 +60,153 @@ fun AdminProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Administrator profile") },
+                title = {
+                    Text("Administrator profile")
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
                     }
                 }
             )
         }
     ) { padding ->
+
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding)
-                .verticalScroll(rememberScrollState()).padding(20.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+
+            // Administrator profile header
             Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(18.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(18.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
+
                     Box(
-                        modifier = Modifier.size(58.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary),
+                        modifier = Modifier
+                            .size(58.dp)
+                            .clip(CircleShape)
+                            .background(
+                                MaterialTheme.colorScheme.primary
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.AdminPanelSettings, contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(32.dp))
+                        Icon(
+                            imageVector = Icons.Default.AccountBox,
+                            contentDescription = "Administrator account",
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(32.dp)
+                        )
                     }
+
                     Column {
-                        Text("ADMINISTRATOR", style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer)
-                        Text(viewModel.fullName.ifBlank { "Admin account" },
+                        Text(
+                            text = "ADMINISTRATOR",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+
+                        Text(
+                            text = viewModel.fullName.ifBlank {
+                                "Admin account"
+                            },
                             style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer)
-                        Text("Administrator contact details",
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+
+                        Text(
+                            text = "Administrator account details",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
                     }
                 }
             }
 
-            if (viewModel.isLoading) LinearProgressIndicator(Modifier.fillMaxWidth())
+            if (viewModel.isLoading) {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             ErrorMessage(viewModel.errorMessage)
+
             SuccessMessage(viewModel.successMessage)
 
-            Text("Current profile", style = MaterialTheme.typography.titleMedium)
-            ProfileValue(Icons.Default.Person, "Full name", viewModel.fullName)
-            ProfileValue(Icons.Default.Email, "Email address", viewModel.email)
-            ProfileValue(Icons.Default.Phone, "Phone number", viewModel.phoneNumber)
+            // Current administrator information
+            Text(
+                text = "Administrator information",
+                style = MaterialTheme.typography.titleMedium
+            )
 
-            Spacer(Modifier.height(4.dp))
-            Text("Edit administrator details", style = MaterialTheme.typography.titleMedium)
-            AppTextField(value = viewModel.fullName, onValueChange = viewModel::onFullNameChanged,
-                label = "Administrator name")
-            AppTextField(value = viewModel.email, onValueChange = viewModel::onEmailChanged,
-                label = "Administrator email")
-            AppTextField(value = viewModel.phoneNumber, onValueChange = viewModel::onPhoneNumberChanged,
-                label = "Administrator phone number")
-            AppButton(text = "Save profile changes", isLoading = viewModel.isLoading,
-                onClick = viewModel::saveProfile)
+            ProfileValue(
+                icon = Icons.Default.Person,
+                label = "Full name",
+                value = viewModel.fullName
+            )
+
+            ProfileValue(
+                icon = Icons.Default.Email,
+                label = "Email address",
+                value = viewModel.email
+            )
+
+            ProfileValue(
+                icon = Icons.Default.Phone,
+                label = "Phone number",
+                value = viewModel.phoneNumber
+            )
+
+            Spacer(
+                modifier = Modifier.height(4.dp)
+            )
+
+            // Edit administrator information
+            Text(
+                text = "Edit administrator details",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            AppTextField(
+                value = viewModel.fullName,
+                onValueChange = viewModel::onFullNameChanged,
+                label = "Administrator name"
+            )
+
+            AppTextField(
+                value = viewModel.email,
+                onValueChange = viewModel::onEmailChanged,
+                label = "Administrator email"
+            )
+
+            AppTextField(
+                value = viewModel.phoneNumber,
+                onValueChange = viewModel::onPhoneNumberChanged,
+                label = "Administrator phone number"
+            )
+
+            AppButton(
+                text = "Save profile changes",
+                isLoading = viewModel.isLoading,
+                onClick = viewModel::saveProfile
+            )
         }
     }
 }
@@ -136,11 +222,25 @@ private fun ProfileValue(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary
+        )
+
         Column {
-            Text(label, style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(value.ifBlank { "Not provided" }, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Text(
+                text = value.ifBlank {
+                    "Not provided"
+                },
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
     }
 }
