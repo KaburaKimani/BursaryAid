@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.bursaryaid.model.UserRole
 import com.example.bursaryaid.repository.UserRepository
 import kotlinx.coroutines.launch
 
@@ -13,14 +14,12 @@ class AdminProfileViewModel(
     private val adminUserId: Long,
     private val userRepository: UserRepository
 ) : ViewModel() {
-
     var fullName by mutableStateOf("")
         private set
     var email by mutableStateOf("")
         private set
     var phoneNumber by mutableStateOf("")
         private set
-
     var isLoading by mutableStateOf(true)
         private set
     var errorMessage by mutableStateOf<String?>(null)
@@ -30,54 +29,81 @@ class AdminProfileViewModel(
     var isSaved by mutableStateOf(false)
         private set
 
-    init {
-        loadAdminProfile()
-    }
+    init { loadAdminProfile() }
 
     private fun loadAdminProfile() {
         viewModelScope.launch {
             isLoading = true
+            errorMessage = null
             try {
                 val user = userRepository.getUserById(adminUserId)
-                if (user != null) {
+                if (user == null || user.userRole != UserRole.ADMIN) {
+                    errorMessage = "Administrator account could not be found."
+                } else {
                     fullName = user.fullName
                     email = user.email
                     phoneNumber = user.phoneNumber
                 }
             } catch (e: Exception) {
-                errorMessage = "Could not load admin profile."
+                errorMessage = "Could not load administrator profile."
             } finally {
                 isLoading = false
             }
         }
     }
 
-    fun onFullNameChanged(value: String) { fullName = value; errorMessage = null }
-    fun onEmailChanged(value: String) { email = value; errorMessage = null }
-    fun onPhoneNumberChanged(value: String) { phoneNumber = value; errorMessage = null }
+    fun onFullNameChanged(value: String) { fullName = value; clearMessages() }
+    fun onEmailChanged(value: String) { email = value; clearMessages() }
+    fun onPhoneNumberChanged(value: String) { phoneNumber = value; clearMessages() }
+
+    private fun clearMessages() {
+        errorMessage = null
+        successMessage = null
+    }
 
     fun saveProfile() {
-        if (fullName.isBlank() || email.isBlank()) {
-            errorMessage = "Name and email cannot be blank."
+        if (isLoading) return
+        val cleanName = fullName.trim()
+        val cleanEmail = email.trim().lowercase()
+        val cleanPhone = phoneNumber.trim()
+
+        if (cleanName.isBlank() || cleanEmail.isBlank()) {
+            errorMessage = "Administrator name and email are required."
             return
         }
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(cleanEmail).matches()) {
+            errorMessage = "Enter a valid email address."
+            return
+        }
+
         viewModelScope.launch {
             isLoading = true
+            clearMessages()
             try {
-                val user = userRepository.getUserById(adminUserId)
-                if (user != null) {
-                    userRepository.updateUser(
-                        user.copy(
-                            fullName = fullName.trim(),
-                            email = email.trim().lowercase(),
-                            phoneNumber = phoneNumber.trim()
-                        )
-                    )
-                    successMessage = "Admin profile updated successfully."
-                    isSaved = true
+                val currentUser = userRepository.getUserById(adminUserId)
+                if (currentUser == null || currentUser.userRole != UserRole.ADMIN) {
+                    errorMessage = "Administrator account could not be found. Sign in again."
+                    return@launch
                 }
+                val accountUsingEmail = userRepository.getUserByEmail(cleanEmail)
+                if (accountUsingEmail != null && accountUsingEmail.userId != adminUserId) {
+                    errorMessage = "That email address is already used by another account."
+                    return@launch
+                }
+                val updatedRows = userRepository.updateUser(
+                    currentUser.copy(fullName = cleanName, email = cleanEmail, phoneNumber = cleanPhone)
+                )
+                if (updatedRows == 0) {
+                    errorMessage = "No administrator profile was updated. Please try again."
+                    return@launch
+                }
+                fullName = cleanName
+                email = cleanEmail
+                phoneNumber = cleanPhone
+                successMessage = "Administrator profile updated successfully."
+                isSaved = true
             } catch (e: Exception) {
-                errorMessage = "Failed to update profile."
+                errorMessage = "Failed to save administrator profile. Please try again."
             } finally {
                 isLoading = false
             }
