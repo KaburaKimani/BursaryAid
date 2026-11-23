@@ -30,7 +30,7 @@ class AdminBursaryOverviewViewModel(
             val counts = applications
                 .filter { it.applicationStatus != ApplicationStatus.DRAFT }
                 .groupBy { it.bursaryId }
-                .mapValues { entry -> entry.value.size }
+                .mapValues { entry -> entry.value.map { it.studentId }.distinct().size }
 
             bursaries.map { bursary ->
                 BursaryOverviewItem(

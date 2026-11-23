@@ -21,7 +21,6 @@ android {
 
         buildConfigField("String", "DEFAULT_ADMIN_EMAIL", "\"admin@bursaryaid.com\"")
         buildConfigField("String", "DEFAULT_ADMIN_PASSWORD", "\"Admin123!\"")
-        buildConfigField("String", "BURSARY_API_BASE_URL", "\"https://api.bursaryaid.example.com/\"")
     }
 
     buildTypes {
@@ -73,16 +72,6 @@ dependencies {
 
     // Background Tasks
     implementation("androidx.work:work-runtime-ktx:2.9.0")
-
-    // Retrofit API Communication
-    implementation("com.squareup.retrofit2:retrofit:2.11.0")
-    implementation("com.squareup.retrofit2:converter-moshi:2.11.0")
-
-    // OkHttp
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-
-    // Moshi JSON
-    implementation("com.squareup.moshi:moshi-kotlin:1.15.1")
 
     // Unit Testing
     testImplementation(libs.junit)

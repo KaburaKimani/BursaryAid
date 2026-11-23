@@ -11,9 +11,10 @@ import com.example.bursaryaid.feature.admin.logic.DecisionEvent
  * them where the admin screens are created.
  */
 fun adminApplicationsViewModelFactory(
-    adminReviewRepository: AdminReviewRepository
+    adminReviewRepository: AdminReviewRepository,
+    bursaryId: Long? = null
 ): ViewModelProvider.Factory = viewModelFactory {
-    initializer { AdminApplicationsViewModel(adminReviewRepository) }
+    initializer { AdminApplicationsViewModel(adminReviewRepository, bursaryId) }
 }
 
 fun adminReviewViewModelFactory(

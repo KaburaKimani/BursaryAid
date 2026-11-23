@@ -29,7 +29,8 @@ data class AdminApplicationsUiState(
 )
 
 class AdminApplicationsViewModel(
-    private val adminReviewRepository: AdminReviewRepository
+    private val adminReviewRepository: AdminReviewRepository,
+    private val bursaryId: Long? = null
 ) : ViewModel() {
 
     private val baseState = MutableStateFlow(AdminApplicationsUiState())
@@ -39,9 +40,18 @@ class AdminApplicationsViewModel(
     /** Recalculated whenever the database list, the search or the filter changes. */
     val uiState: StateFlow<AdminApplicationsUiState> =
         combine(baseState, allApplications) { state, all ->
+            val scopedApplications = all.filter { item ->
+                bursaryId == null || item.bursaryId == bursaryId
+            }
             state.copy(
-                applications = AdminApplicationFilter.apply(all, state.searchQuery, state.selectedFilter),
-                totalApplicationCount = all.count { it.applicationStatus != ApplicationStatus.DRAFT }
+                applications = AdminApplicationFilter.apply(
+                    scopedApplications,
+                    state.searchQuery,
+                    state.selectedFilter
+                ),
+                totalApplicationCount = scopedApplications.count {
+                    it.applicationStatus != ApplicationStatus.DRAFT
+                }
             )
         }.stateIn(viewModelScope, SharingStarted.Eagerly, AdminApplicationsUiState())
 

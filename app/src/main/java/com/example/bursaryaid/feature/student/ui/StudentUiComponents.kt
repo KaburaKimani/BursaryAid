@@ -135,7 +135,12 @@ fun StudentStatusChip(applicationStatus: ApplicationStatus, modifier: Modifier =
             )
             Spacer(Modifier.width(6.dp))
             Text(
-                text = applicationStatus.displayName(),
+                text = when (applicationStatus) {
+                    ApplicationStatus.SUBMITTED,
+                    ApplicationStatus.UNDER_REVIEW,
+                    ApplicationStatus.NEEDS_INFORMATION -> "Pending"
+                    else -> applicationStatus.displayName()
+                },
                 color = textColor,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 12.sp

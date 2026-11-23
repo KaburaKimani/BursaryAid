@@ -52,15 +52,15 @@ import com.example.bursaryaid.feature.student.viewmodel.studentProfileViewModelF
 
 import com.example.bursaryaid.feature.admin.data.RoomAdminReviewRepository
 import com.example.bursaryaid.feature.admin.ui.AdminApplicationsScreen
+import com.example.bursaryaid.feature.admin.ui.AdminBursaryOverviewScreen
 import com.example.bursaryaid.feature.admin.ui.AdminCreateBursaryScreen
 import com.example.bursaryaid.feature.admin.ui.AdminProfileScreen
 import com.example.bursaryaid.feature.admin.ui.AdminReviewScreen
-import com.example.bursaryaid.feature.admin.ui.AdminStudentsScreen
 import com.example.bursaryaid.feature.admin.viewmodel.adminApplicationsViewModelFactory
+import com.example.bursaryaid.feature.admin.viewmodel.adminBursaryOverviewViewModelFactory
 import com.example.bursaryaid.feature.admin.viewmodel.adminCreateBursaryViewModelFactory
 import com.example.bursaryaid.feature.admin.viewmodel.adminProfileViewModelFactory
 import com.example.bursaryaid.feature.admin.viewmodel.adminReviewViewModelFactory
-import com.example.bursaryaid.feature.admin.viewmodel.adminStudentsViewModelFactory
 
 import com.example.bursaryaid.navigation.Routes
 import com.example.bursaryaid.navigation.navigateToApplicationDetails
@@ -248,15 +248,11 @@ fun BursaryAppNavigation(
                     onToggleTheme = onToggleTheme,
 
                     onReviewApplications = {
-                        navController.navigate(Routes.ADMIN_APPLICATIONS)
+                        navController.navigate(Routes.ADMIN_BURSARY_OVERVIEW)
                     },
 
                     onCreateBursary = {
                         navController.navigate(Routes.ADMIN_CREATE_BURSARY)
-                    },
-
-                    onTrackStudents = {
-                        navController.navigate(Routes.ADMIN_STUDENTS)
                     },
 
                     onProfile = {
@@ -296,19 +292,58 @@ fun BursaryAppNavigation(
                 )
             }
 
-            // ADMIN TRACK STUDENTS
-            composable(Routes.ADMIN_STUDENTS) {
-
-                val adminStudentsViewModel =
-                    viewModel<com.example.bursaryaid.feature.admin.viewmodel.AdminStudentsViewModel>(
-                        factory = adminStudentsViewModelFactory(
-                            userRepository,
-                            profileRepo
+            // ADMIN BURSARY OVERVIEW: all counts are observed from Room.
+            composable(Routes.ADMIN_BURSARY_OVERVIEW) {
+                val overviewViewModel =
+                    viewModel<com.example.bursaryaid.feature.admin.viewmodel.AdminBursaryOverviewViewModel>(
+                        factory = adminBursaryOverviewViewModelFactory(
+                            bursaryRepo,
+                            applicationRepo
                         )
                     )
 
-                AdminStudentsScreen(
-                    viewModel = adminStudentsViewModel,
+                AdminBursaryOverviewScreen(
+                    viewModel = overviewViewModel,
+                    onSelectBursary = { bursaryId ->
+                        navController.navigate(Routes.adminBursaryApplicants(bursaryId))
+                    },
+                    onCreateBursary = {
+                        navController.navigate(Routes.ADMIN_CREATE_BURSARY)
+                    },
+                    onBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+
+            // APPLICATIONS FOR A SELECTED BURSARY.
+            composable(
+                route = Routes.ADMIN_BURSARY_APPLICANTS_PATTERN,
+                arguments = listOf(
+                    navArgument(Routes.ARG_BURSARY_ID) {
+                        type = NavType.LongType
+                    }
+                )
+            ) { backStackEntry ->
+                val bursaryId =
+                    backStackEntry.arguments?.getLong(Routes.ARG_BURSARY_ID)
+                        ?: return@composable
+
+                val applicantsViewModel =
+                    viewModel<com.example.bursaryaid.feature.admin.viewmodel.AdminApplicationsViewModel>(
+                        key = "admin-bursary-applicants-$bursaryId",
+                        factory = adminApplicationsViewModelFactory(
+                            adminReviewRepository,
+                            bursaryId
+                        )
+                    )
+
+                AdminApplicationsScreen(
+                    viewModel = applicantsViewModel,
+                    onOpenApplication = { applicationId ->
+                        navController.navigate(Routes.adminReview(applicationId))
+                    },
+                    title = "Bursary Applicants",
                     onBack = {
                         navController.popBackStack()
                     }

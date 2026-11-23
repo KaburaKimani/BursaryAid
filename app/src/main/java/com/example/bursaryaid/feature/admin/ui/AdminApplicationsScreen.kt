@@ -11,7 +11,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
@@ -35,6 +39,8 @@ import com.example.bursaryaid.ui.components.ErrorMessage
 fun AdminApplicationsScreen(
     viewModel: AdminApplicationsViewModel,
     onOpenApplication: (applicationId: Long) -> Unit,
+    title: String = "Review Applications",
+    onBack: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -44,6 +50,8 @@ fun AdminApplicationsScreen(
         onFilterSelected = viewModel::onFilterSelected,
         onOpenApplication = onOpenApplication,
         onRetry = viewModel::loadApplications,
+        title = title,
+        onBack = onBack,
         modifier = modifier
     )
 }
@@ -56,12 +64,21 @@ fun AdminApplicationsContent(
     onFilterSelected: (ApplicationStatus?) -> Unit,
     onOpenApplication: (applicationId: Long) -> Unit,
     onRetry: () -> Unit,
+    title: String = "Review Applications",
+    onBack: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Review Applications") }
+                title = { Text(title) },
+                navigationIcon = {
+                    if (onBack != null) {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    }
+                }
             )
         },
         modifier = modifier
