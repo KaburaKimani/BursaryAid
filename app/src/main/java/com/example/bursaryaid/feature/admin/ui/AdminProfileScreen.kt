@@ -1,16 +1,27 @@
 package com.example.bursaryaid.feature.admin.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AdminPanelSettings
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -21,7 +32,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.example.bursaryaid.feature.admin.viewmodel.AdminProfileViewModel
 import com.example.bursaryaid.ui.components.AppButton
@@ -36,10 +49,8 @@ fun AdminProfileScreen(
     onProfileSaved: () -> Unit,
     onBack: () -> Unit
 ) {
-    val state = viewModel
-
-    LaunchedEffect(state.isSaved) {
-        if (state.isSaved) {
+    LaunchedEffect(viewModel.isSaved) {
+        if (viewModel.isSaved) {
             viewModel.consumeSaved()
             onProfileSaved()
         }
@@ -48,7 +59,7 @@ fun AdminProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Administrator Profile") },
+                title = { Text("Administrator profile") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -58,41 +69,78 @@ fun AdminProfileScreen(
         }
     ) { padding ->
         Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(20.dp),
+            modifier = Modifier.fillMaxSize().padding(padding)
+                .verticalScroll(rememberScrollState()).padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            if (state.isLoading) LinearProgressIndicator(Modifier.fillMaxWidth())
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(18.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    Box(
+                        modifier = Modifier.size(58.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.AdminPanelSettings, contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(32.dp))
+                    }
+                    Column {
+                        Text("ADMINISTRATOR", style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        Text(viewModel.fullName.ifBlank { "Admin account" },
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        Text("Administrator contact details",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    }
+                }
+            }
 
-            ErrorMessage(state.errorMessage)
-            SuccessMessage(state.successMessage)
+            if (viewModel.isLoading) LinearProgressIndicator(Modifier.fillMaxWidth())
+            ErrorMessage(viewModel.errorMessage)
+            SuccessMessage(viewModel.successMessage)
 
-            Text("Admin Credentials & Contact", style = MaterialTheme.typography.titleMedium)
-            AppTextField(
-                value = state.fullName,
-                onValueChange = viewModel::onFullNameChanged,
-                label = "Full Name"
-            )
-            AppTextField(
-                value = state.email,
-                onValueChange = viewModel::onEmailChanged,
-                label = "Email Address"
-            )
-            AppTextField(
-                value = state.phoneNumber,
-                onValueChange = viewModel::onPhoneNumberChanged,
-                label = "Phone Number"
-            )
+            Text("Current profile", style = MaterialTheme.typography.titleMedium)
+            ProfileValue(Icons.Default.Person, "Full name", viewModel.fullName)
+            ProfileValue(Icons.Default.Email, "Email address", viewModel.email)
+            ProfileValue(Icons.Default.Phone, "Phone number", viewModel.phoneNumber)
 
-            Spacer(Modifier.height(16.dp))
-            AppButton(
-                text = "Update Admin Profile",
-                isLoading = state.isLoading,
-                onClick = viewModel::saveProfile
-            )
+            Spacer(Modifier.height(4.dp))
+            Text("Edit administrator details", style = MaterialTheme.typography.titleMedium)
+            AppTextField(value = viewModel.fullName, onValueChange = viewModel::onFullNameChanged,
+                label = "Administrator name")
+            AppTextField(value = viewModel.email, onValueChange = viewModel::onEmailChanged,
+                label = "Administrator email")
+            AppTextField(value = viewModel.phoneNumber, onValueChange = viewModel::onPhoneNumberChanged,
+                label = "Administrator phone number")
+            AppButton(text = "Save profile changes", isLoading = viewModel.isLoading,
+                onClick = viewModel::saveProfile)
+        }
+    }
+}
+
+@Composable
+private fun ProfileValue(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    value: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+        Column {
+            Text(label, style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(value.ifBlank { "Not provided" }, style = MaterialTheme.typography.bodyLarge)
         }
     }
 }
