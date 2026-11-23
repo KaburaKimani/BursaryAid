@@ -21,6 +21,7 @@ import com.example.bursaryaid.feature.auth.ui.LoginScreen
 import com.example.bursaryaid.feature.auth.ui.RegisterScreen
 import com.example.bursaryaid.feature.auth.ui.StudentDashboardScreen
 import com.example.bursaryaid.feature.auth.viewmodel.AuthViewModel
+import com.example.bursaryaid.feature.auth.viewmodel.AuthViewModelFactory
 import com.example.bursaryaid.feature.bursary.ui.BursaryDetailsScreen
 import com.example.bursaryaid.feature.bursary.ui.BursaryListScreen
 import com.example.bursaryaid.feature.bursary.viewmodel.BursaryBrowseViewModel
@@ -43,6 +44,7 @@ import com.example.bursaryaid.navigation.navigateToDashboard
 import com.example.bursaryaid.repository.BursaryApplicationRepository
 import com.example.bursaryaid.repository.BursaryRepository
 import com.example.bursaryaid.repository.StudentProfileRepository
+import com.example.bursaryaid.repository.UserRepository
 import com.example.bursaryaid.ui.theme.BursaryAidTheme
 
 class MainActivity : ComponentActivity() {
@@ -58,17 +60,18 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun BursaryAppNavigation() {
-    val navController = rememberNavController()
-    val authViewModel: AuthViewModel = viewModel()
-    val bursaryBrowseViewModel: BursaryBrowseViewModel = viewModel()
-
     val context = LocalContext.current
     val database = remember { AppDatabase.getDatabase(context) }
+    val userRepository = remember { UserRepository(database.userDao()) }
     val profileRepo = remember { StudentProfileRepository(database.studentProfileDao()) }
     val applicationRepo = remember { BursaryApplicationRepository(database.bursaryApplicationDao()) }
     val bursaryRepo = remember { BursaryRepository(database.bursaryDao()) }
 
-    // Set by login (Member 1)
+    val navController = rememberNavController()
+
+    val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(userRepository))
+    val bursaryBrowseViewModel: BursaryBrowseViewModel = viewModel()
+
     val currentUserId = authViewModel.currentUserId
 
     Scaffold { innerPadding ->
@@ -77,7 +80,7 @@ fun BursaryAppNavigation() {
             startDestination = Routes.LOGIN,
             modifier = Modifier.padding(innerPadding)
         ) {
-            // Login (Member 1)
+            // Login
             composable(Routes.LOGIN) {
                 LoginScreen(
                     viewModel = authViewModel,
@@ -86,7 +89,7 @@ fun BursaryAppNavigation() {
                 )
             }
 
-            // Registration (Member 1)
+            // Registration
             composable(Routes.REGISTER) {
                 RegisterScreen(
                     viewModel = authViewModel,
@@ -99,7 +102,7 @@ fun BursaryAppNavigation() {
                 )
             }
 
-            // Student dashboard (Member 1)
+            // Student dashboard
             composable(Routes.STUDENT_DASHBOARD) {
                 StudentDashboardScreen(
                     onMyApplications = { navController.navigate(Routes.MY_APPLICATIONS) },
@@ -114,10 +117,10 @@ fun BursaryAppNavigation() {
                 )
             }
 
-            // Admin dashboard (Member 1 placeholder; Member 4 fills in review)
+            // Admin dashboard
             composable(Routes.ADMIN_DASHBOARD) {
                 AdminDashboardScreen(
-                    onReviewApplications = { /* Member 4's review screen goes here */ },
+                    onReviewApplications = { /* Admin review screen */ },
                     onLogout = {
                         authViewModel.logoutUser()
                         navController.navigate(Routes.LOGIN) {
@@ -127,7 +130,7 @@ fun BursaryAppNavigation() {
                 )
             }
 
-            // Bursary list (Member 1)
+            // Bursary list
             composable(Routes.BURSARY_LIST) {
                 BursaryListScreen(
                     viewModel = bursaryBrowseViewModel,
@@ -136,7 +139,7 @@ fun BursaryAppNavigation() {
                 )
             }
 
-            // Bursary details (Member 1)
+            // Bursary details
             composable(
                 route = Routes.BURSARY_DETAILS_PATTERN,
                 arguments = listOf(navArgument(Routes.ARG_BURSARY_ID) { type = NavType.LongType })
@@ -152,17 +155,17 @@ fun BursaryAppNavigation() {
 
             // My Applications List
             composable(Routes.MY_APPLICATIONS) {
-                val factory = remember(currentUserId) {
-                    myApplicationsViewModelFactory(
+                val myApplicationsViewModel: MyApplicationsViewModel = viewModel(
+                    key = "my-applications-$currentUserId",
+                    factory = myApplicationsViewModelFactory(
                         userId = currentUserId,
                         studentProfileRepository = profileRepo,
                         bursaryApplicationRepository = applicationRepo,
                         bursaryRepository = bursaryRepo
                     )
-                }
-                val vm: MyApplicationsViewModel = viewModel(factory = factory)
+                )
                 MyApplicationsScreen(
-                    viewModel = vm,
+                    viewModel = myApplicationsViewModel,
                     onNewApplication = { navController.navigate(Routes.BURSARY_LIST) },
                     onApplicationClick = { appId -> navController.navigateToApplicationDetails(appId) },
                     onCompleteProfile = { navController.navigate(Routes.PROFILE) },
@@ -172,15 +175,15 @@ fun BursaryAppNavigation() {
 
             // Student Profile
             composable(Routes.PROFILE) {
-                val factory = remember(currentUserId) {
-                    studentProfileViewModelFactory(
+                val profileViewModel: StudentProfileViewModel = viewModel(
+                    key = "profile-$currentUserId",
+                    factory = studentProfileViewModelFactory(
                         userId = currentUserId,
                         studentProfileRepository = profileRepo
                     )
-                }
-                val vm: StudentProfileViewModel = viewModel(factory = factory)
+                )
                 StudentProfileScreen(
-                    viewModel = vm,
+                    viewModel = profileViewModel,
                     onProfileSaved = { navController.popBackStack() },
                     onNavigateBack = { navController.popBackStack() }
                 )
@@ -198,8 +201,9 @@ fun BursaryAppNavigation() {
                 val appIdString = backStackEntry.arguments?.getString(Routes.ARG_APP_ID)
                 val selectedAppId = appIdString?.toLongOrNull()
 
-                val factory = remember(currentUserId, bursaryId, selectedAppId) {
-                    applicationFormViewModelFactory(
+                val formViewModel: ApplicationFormViewModel = viewModel(
+                    key = "form-$currentUserId-$bursaryId-$selectedAppId",
+                    factory = applicationFormViewModelFactory(
                         userId = currentUserId,
                         selectedApplicationId = selectedAppId,
                         studentProfileRepository = profileRepo,
@@ -207,10 +211,9 @@ fun BursaryAppNavigation() {
                         bursaryRepository = bursaryRepo,
                         onApplicationSubmitted = { /* Notification hook for Member 5 */ }
                     )
-                }
-                val vm: ApplicationFormViewModel = viewModel(factory = factory)
+                )
                 ApplicationFormScreen(
-                    viewModel = vm,
+                    viewModel = formViewModel,
                     onApplicationSaved = { navController.popBackStack() },
                     onCompleteProfile = { navController.navigate(Routes.PROFILE) },
                     onNavigateBack = { navController.popBackStack() }
@@ -224,18 +227,18 @@ fun BursaryAppNavigation() {
             ) { backStackEntry ->
                 val appId = backStackEntry.arguments?.getLong(Routes.ARG_APP_ID) ?: return@composable
 
-                val factory = remember(currentUserId, appId) {
-                    applicationDetailsViewModelFactory(
+                val detailsViewModel: ApplicationDetailsViewModel = viewModel(
+                    key = "details-$currentUserId-$appId",
+                    factory = applicationDetailsViewModelFactory(
                         userId = currentUserId,
                         selectedApplicationId = appId,
                         studentProfileRepository = profileRepo,
                         bursaryApplicationRepository = applicationRepo,
                         bursaryRepository = bursaryRepo
                     )
-                }
-                val vm: ApplicationDetailsViewModel = viewModel(factory = factory)
+                )
                 ApplicationDetailsScreen(
-                    viewModel = vm,
+                    viewModel = detailsViewModel,
                     onEditApplication = { editId ->
                         navController.navigate(Routes.form(bursaryId = 1L, appId = editId))
                     },

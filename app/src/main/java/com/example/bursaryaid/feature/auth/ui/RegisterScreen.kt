@@ -158,7 +158,9 @@ fun RegisterScreen(
             text = "Register Account",
             isLoading = viewModel.isLoading,
             onClick = {
-                if (viewModel.registerUser(fullName, email, phoneNumber, password, confirmPassword)) {
+                viewModel.registerUser(
+                    fullName, email, phoneNumber, password, confirmPassword
+                ) {
                     onRegisterSuccess()
                 }
             }
