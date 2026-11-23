@@ -64,7 +64,17 @@ class AdminReviewViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             try {
-                val detail = adminReviewRepository.getApplicationDetail(selectedApplicationId)
+                var detail = adminReviewRepository.getApplicationDetail(selectedApplicationId)
+
+                // Opening a newly submitted application starts its review automatically.
+                // This takes the admin directly to the Accept / Reject decision controls.
+                if (detail?.applicationStatus == ApplicationStatus.SUBMITTED) {
+                    val reviewStarted = adminReviewRepository.startReview(selectedApplicationId)
+                    if (reviewStarted.isSuccess) {
+                        detail = adminReviewRepository.getApplicationDetail(selectedApplicationId)
+                    }
+                }
+
                 _uiState.update {
                     if (detail == null) {
                         it.copy(isLoading = false, isApplicationMissing = true)
