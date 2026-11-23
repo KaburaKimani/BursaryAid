@@ -21,7 +21,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -45,7 +44,6 @@ fun AdminDashboardScreen(
     onToggleTheme: () -> Unit,
     onReviewApplications: () -> Unit,
     onCreateBursary: () -> Unit,
-    onTrackStudents: () -> Unit,
     onProfile: () -> Unit,
     onLogout: () -> Unit
 ) {
@@ -135,7 +133,7 @@ fun AdminDashboardScreen(
                         )
                         Spacer(Modifier.height(6.dp))
                         Text(
-                            text = "Manage applications, track students, publish bursaries, and update profile.",
+                            text = "Manage bursary opportunities, review applications, and update your administrator profile.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
                         )
@@ -185,15 +183,6 @@ fun AdminDashboardScreen(
             onClick = onCreateBursary,
             containerColor = MaterialTheme.colorScheme.secondaryContainer,
             contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-        )
-
-        InteractiveActionCard(
-            title = "Track Students",
-            description = "View registered students and their individual details from student profiles.",
-            icon = Icons.Default.Search,
-            onClick = onTrackStudents,
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-            contentColor = MaterialTheme.colorScheme.onTertiaryContainer
         )
 
         InteractiveActionCard(
