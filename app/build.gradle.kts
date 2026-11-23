@@ -21,7 +21,6 @@ android {
 
         buildConfigField("String", "DEFAULT_ADMIN_EMAIL", "\"admin@bursaryaid.com\"")
         buildConfigField("String", "DEFAULT_ADMIN_PASSWORD", "\"Admin123!\"")
-        buildConfigField("String", "BURSARY_API_BASE_URL", "\"https://api.bursaryaid.example.com/\"")
     }
 
     buildTypes {
