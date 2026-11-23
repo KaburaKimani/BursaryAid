@@ -20,8 +20,8 @@ class NotificationViewModel(
     private val userId: Long = 0L
 ) : ViewModel() {
 
-    private val _ui = MutableStateFlow(NotificationsUiState())
-    val ui: StateFlow<NotificationsUiState> = _ui.asStateFlow()
+    private val _uiState = MutableStateFlow(NotificationsUiState())
+    val uiState: StateFlow<NotificationsUiState> = _uiState.asStateFlow()
 
     init {
         loadNotifications()
@@ -30,18 +30,18 @@ class NotificationViewModel(
     fun loadNotifications() {
         if (repository == null || userId == 0L) return
         viewModelScope.launch {
-            _ui.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(isLoading = true) }
             repository.getNotificationsByUserId(userId).collect { list ->
-                _ui.update { it.copy(notifications = list, isLoading = false) }
+                _uiState.update { it.copy(notifications = list, isLoading = false) }
             }
         }
     }
 
     fun markAsRead(notificationId: Long) {
-        val current = _ui.value.notifications
+        val current = _uiState.value.notifications
         val updated = current.map {
             if (it.notificationId == notificationId) it.copy(isRead = true) else it
         }
-        _ui.update { it.copy(notifications = updated) }
+        _uiState.update { it.copy(notifications = updated) }
     }
 }

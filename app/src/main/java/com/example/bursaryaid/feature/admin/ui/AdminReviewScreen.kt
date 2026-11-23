@@ -188,7 +188,7 @@ private fun ReviewBody(
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodyMedium
                     )
-                    eligibility.failedReasons.forEach { reason ->
+                    for (reason in eligibility.failedReasons) {
                         Text("- $reason", style = MaterialTheme.typography.bodyMedium)
                     }
                 }

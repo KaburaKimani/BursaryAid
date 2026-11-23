@@ -24,7 +24,6 @@ import com.example.bursaryaid.repository.UserRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlin.math.roundToLong
 
 /** The student facts the admin screens need, gathered from the profile and the account. */
 private data class StudentInfo(
@@ -64,7 +63,7 @@ class RoomAdminReviewRepository(
                         loadStudent(application.studentId)
                     }
                     val bursaryName = bursaryNames.getOrPut(application.bursaryId) {
-                        bursaryRepository.getBursaryById(application.bursaryId)?.title ?: "Unknown bursary"
+                        bursaryRepository.getBursaryById(application.bursaryId)?.bursaryName ?: "Unknown bursary"
                     }
                     AdminApplicationItem(
                         applicationId = application.applicationId,
@@ -73,9 +72,9 @@ class RoomAdminReviewRepository(
                         admissionNumber = student.admissionNumber,
                         bursaryId = application.bursaryId,
                         bursaryName = bursaryName,
-                        requestedAmountKes = application.requestedAmount.roundToLong(),
+                        requestedAmountKes = application.requestedAmountKes,
                         applicationStatus = application.applicationStatus,
-                        submittedAtMillis = application.submittedAtMillis
+                        submittedAtMillis = application.submittedAtMillis ?: 0L
                     )
                 }
         }
@@ -93,7 +92,7 @@ class RoomAdminReviewRepository(
                 return@withTransaction DecisionResult.failure("Only submitted applications can be reviewed.")
             }
             applicationRepository.updateApplication(
-                application.copy(applicationStatus = ApplicationStatus.UNDER_REVIEW, lastUpdatedAtMillis = clock())
+                application.copy(applicationStatus = ApplicationStatus.UNDER_REVIEW, updatedAtMillis = clock())
             )
             DecisionResult.success()
         }
@@ -109,7 +108,7 @@ class RoomAdminReviewRepository(
             return@withTransaction DecisionResult.failure("Information can only be requested during review.")
         }
         applicationRepository.updateApplication(
-            application.copy(applicationStatus = ApplicationStatus.NEEDS_INFORMATION, lastUpdatedAtMillis = clock())
+            application.copy(applicationStatus = ApplicationStatus.NEEDS_INFORMATION, updatedAtMillis = clock())
         )
         notifyStudent(application.studentId, NotificationType.INFORMATION_REQUESTED, "More information needed", message)
         DecisionResult.success()
@@ -159,14 +158,8 @@ class RoomAdminReviewRepository(
             )
         )
         applicationRepository.updateApplication(
-            application.copy(applicationStatus = ApplicationStatus.APPROVED, lastUpdatedAtMillis = now)
+            application.copy(applicationStatus = ApplicationStatus.APPROVED, updatedAtMillis = now)
         )
-        // Member 3's table stores a remaining budget; keep that copy in step with the calculated value.
-        bursaryRepository.getBursaryById(application.bursaryId)?.let { bursary ->
-            bursaryRepository.updateBursary(
-                bursary.copy(remainingBudget = (detail.remainingBudgetKes - awardedAmountKes).toDouble())
-            )
-        }
         notifyStudent(
             application.studentId,
             NotificationType.ALLOCATION_CONFIRMED,
@@ -199,7 +192,7 @@ class RoomAdminReviewRepository(
             )
         )
         applicationRepository.updateApplication(
-            application.copy(applicationStatus = ApplicationStatus.REJECTED, lastUpdatedAtMillis = now)
+            application.copy(applicationStatus = ApplicationStatus.REJECTED, updatedAtMillis = now)
         )
         notifyStudent(application.studentId, NotificationType.APPLICATION_STATUS_CHANGED, "Application rejected", reason)
         DecisionResult.success()
@@ -219,9 +212,9 @@ class RoomAdminReviewRepository(
         return AdminApplicationDetail(
             applicationId = application.applicationId,
             applicationStatus = application.applicationStatus,
-            requestedAmountKes = application.requestedAmount.roundToLong(),
-            justification = application.justificationReason,
-            submittedAtMillis = application.submittedAtMillis,
+            requestedAmountKes = application.requestedAmountKes,
+            justification = application.applicationReason,
+            submittedAtMillis = application.submittedAtMillis ?: 0L,
             studentId = application.studentId,
             studentName = student.name,
             admissionNumber = student.admissionNumber,
@@ -230,12 +223,12 @@ class RoomAdminReviewRepository(
             yearOfStudy = student.yearOfStudy,
             householdIncomeKes = null, // the merged schema only has a text income level
             bursaryId = bursary.bursaryId,
-            bursaryName = bursary.title,
+            bursaryName = bursary.bursaryName,
             applicationDeadlineMillis = bursary.applicationDeadlineMillis,
             incomeLimitKes = null, // the merged schema has no income limit, so rule E6 is skipped
-            maximumAwardKes = bursary.maxAmountPerStudent.roundToLong(),
-            totalBudgetKes = bursary.totalBudget.roundToLong(),
-            approvedAwardsKes = approved.map { it.allocatedAmount.roundToLong() },
+            maximumAwardKes = bursary.maximumAwardKes,
+            totalBudgetKes = bursary.totalBudgetKes,
+            approvedAwardsKes = approved.map { it.allocatedAmount.toLong() },
             hasApprovedAllocation = approved.any { it.applicationId == applicationId }
         )
     }
@@ -245,9 +238,9 @@ class RoomAdminReviewRepository(
         val user = profile?.let { userRepository.getUserById(it.userId) }
         return StudentInfo(
             name = user?.fullName ?: "Unknown student",
-            admissionNumber = profile?.admissionNumber ?: "-",
+            admissionNumber = profile?.registrationNumber ?: "-",
             institutionName = profile?.institutionName ?: "-",
-            courseName = profile?.courseOfStudy ?: "-",
+            courseName = profile?.courseName ?: "-",
             yearOfStudy = profile?.yearOfStudy ?: 0
         )
     }

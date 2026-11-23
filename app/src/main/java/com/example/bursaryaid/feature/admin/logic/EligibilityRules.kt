@@ -20,10 +20,17 @@ data class EligibilityInput(
 
 data class EligibilityResult(
     val isEligible: Boolean,
-    val failedReasons: List<String>
+    val failedReasons: List<String> = emptyList(),
+    val reason: String = if (isEligible) "Student meets all income and status eligibility criteria." else failedReasons.joinToString("; ")
 ) {
+    constructor(isEligible: Boolean, reason: String) : this(
+        isEligible = isEligible,
+        failedReasons = if (isEligible || reason.isBlank()) emptyList() else listOf(reason),
+        reason = reason
+    )
+
     val eligibilityReason: String
-        get() = if (isEligible) "Meets all criteria" else failedReasons.joinToString("; ")
+        get() = if (isEligible) "Meets all criteria" else (failedReasons.ifEmpty { listOf(reason) }).joinToString("; ")
 }
 
 /**

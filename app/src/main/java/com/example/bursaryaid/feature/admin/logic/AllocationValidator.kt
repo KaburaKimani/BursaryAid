@@ -81,8 +81,3 @@ object AllocationValidator {
         )
     }
 }
-
-data class EligibilityResult(
-    val isEligible: Boolean,
-    val reason: String
-)
