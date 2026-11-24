@@ -9,11 +9,14 @@ class BursaryApplicationRepository(private val bursaryApplicationDao: BursaryApp
     suspend fun insertApplication(application: BursaryApplication): Long =
         bursaryApplicationDao.insertApplication(application)
 
-    suspend fun updateApplication(application: BursaryApplication) =
+    suspend fun updateApplication(application: BursaryApplication): Int =
         bursaryApplicationDao.updateApplication(application)
 
     suspend fun getApplicationById(applicationId: Long): BursaryApplication? =
         bursaryApplicationDao.getApplicationById(applicationId)
+
+    fun observeApplicationById(applicationId: Long): Flow<BursaryApplication?> =
+        bursaryApplicationDao.observeApplicationById(applicationId)
 
     fun getApplicationsByStudent(studentId: Long): Flow<List<BursaryApplication>> =
         bursaryApplicationDao.getApplicationsByStudent(studentId)
@@ -27,6 +30,6 @@ class BursaryApplicationRepository(private val bursaryApplicationDao: BursaryApp
     fun getApplicationsByStatus(status: ApplicationStatus): Flow<List<BursaryApplication>> =
         bursaryApplicationDao.getApplicationsByStatus(status)
 
-    suspend fun deleteApplication(applicationId: Long) =
+    suspend fun deleteApplication(applicationId: Long): Int =
         bursaryApplicationDao.deleteApplication(applicationId)
 }
