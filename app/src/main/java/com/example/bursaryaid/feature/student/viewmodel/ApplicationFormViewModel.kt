@@ -167,9 +167,10 @@ class ApplicationFormViewModel(
             if (!runValidation(requireComplete)) return@launchOperation
             if (isDuplicate(studentId, applicationId)) return@launchOperation
 
-            applicationRepository.updateApplication(
+            val updatedRows = applicationRepository.updateApplication(
                 buildApplication(existing, studentId, existing.applicationStatus, existing.submittedAtMillis)
             )
+            check(updatedRows > 0) { "The application no longer exists and could not be updated." }
             _uiState.update { it.copy(successMessage = "Changes saved.", isSaved = true) }
         }
     }
@@ -191,7 +192,8 @@ class ApplicationFormViewModel(
             val saved = if (existing == null) {
                 application.copy(applicationId = applicationRepository.insertApplication(application))
             } else {
-                applicationRepository.updateApplication(application)
+                val updatedRows = applicationRepository.updateApplication(application)
+                check(updatedRows > 0) { "The application no longer exists and could not be updated." }
                 application
             }
             if (submit) {
