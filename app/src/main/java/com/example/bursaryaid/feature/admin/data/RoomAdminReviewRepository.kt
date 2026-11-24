@@ -94,7 +94,7 @@ class RoomAdminReviewRepository(
                 updatedAtMillis = clock()
             )
         )
-        if (updatedRows == 0) return@withTransaction DecisionResult.failure("The application could not be updated.")
+        check(updatedRows > 0) { "The application could not be updated." }
         DecisionResult.success()
     }
 
@@ -121,7 +121,7 @@ class RoomAdminReviewRepository(
                 updatedAtMillis = clock()
             )
         )
-        if (updatedRows == 0) return@withTransaction DecisionResult.failure("The application could not be updated.")
+        check(updatedRows > 0) { "The application could not be updated." }
 
         notifyStudent(application.studentId, NotificationType.INFORMATION_REQUESTED, "More information needed", cleanMessage)
         DecisionResult.success()
@@ -172,7 +172,7 @@ class RoomAdminReviewRepository(
         val updatedRows = applicationRepository.updateApplication(
             application.copy(applicationStatus = ApplicationStatus.APPROVED, updatedAtMillis = now)
         )
-        if (updatedRows == 0) return@withTransaction DecisionResult.failure("The application could not be updated.")
+        check(updatedRows > 0) { "The application could not be updated." }
 
         notifyStudent(
             application.studentId,
@@ -217,7 +217,7 @@ class RoomAdminReviewRepository(
         val updatedRows = applicationRepository.updateApplication(
             application.copy(applicationStatus = ApplicationStatus.REJECTED, updatedAtMillis = now)
         )
-        if (updatedRows == 0) return@withTransaction DecisionResult.failure("The application could not be updated.")
+        check(updatedRows > 0) { "The application could not be updated." }
 
         notifyStudent(application.studentId, NotificationType.APPLICATION_STATUS_CHANGED, "Application rejected", cleanReason)
         DecisionResult.success()
