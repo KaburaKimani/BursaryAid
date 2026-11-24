@@ -1,10 +1,7 @@
-
 package com.example.bursaryaid.feature.admin.data
 
 import androidx.room.withTransaction
-
 import com.example.bursaryaid.database.AppDatabase
-
 import com.example.bursaryaid.feature.admin.logic.AdminApplicationDetail
 import com.example.bursaryaid.feature.admin.logic.AdminApplicationItem
 import com.example.bursaryaid.feature.admin.logic.AllocationInput
@@ -13,32 +10,20 @@ import com.example.bursaryaid.feature.admin.logic.DecisionResult
 import com.example.bursaryaid.feature.admin.logic.EligibilityRules
 import com.example.bursaryaid.feature.admin.logic.ReviewWorkflow
 import com.example.bursaryaid.feature.admin.logic.toEligibilityInput
-
 import com.example.bursaryaid.model.AllocationRecord
 import com.example.bursaryaid.model.AppNotification
 import com.example.bursaryaid.model.ApplicationStatus
 import com.example.bursaryaid.model.DecisionStatus
 import com.example.bursaryaid.model.NotificationType
-
 import com.example.bursaryaid.repository.AllocationRecordRepository
 import com.example.bursaryaid.repository.AppNotificationRepository
 import com.example.bursaryaid.repository.BursaryApplicationRepository
 import com.example.bursaryaid.repository.BursaryRepository
 import com.example.bursaryaid.repository.StudentProfileRepository
 import com.example.bursaryaid.repository.UserRepository
-
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
-
-private data class StudentInfo(
-    val name: String,
-    val admissionNumber: String,
-    val institutionName: String,
-    val courseName: String,
-    val yearOfStudy: Int,
-    val monthlyHouseholdIncomeKes: Long
-)
 
 class RoomAdminReviewRepository(
     private val database: AppDatabase,
@@ -51,44 +36,42 @@ class RoomAdminReviewRepository(
     private val clock: () -> Long = { System.currentTimeMillis() }
 ) : AdminReviewRepository {
 
+    /**
+     * Keep the admin list in sync with every table that contributes visible applicant data.
+     * Previously only application rows were observed, so editing a student's profile or a
+     * bursary name could leave stale labels on the admin screen until another application
+     * happened to change.
+     */
     override fun observeApplications(): Flow<List<AdminApplicationItem>> =
-        applicationRepository.getAllApplications().map { applications ->
-
-            val students = mutableMapOf<Long, StudentInfo>()
-            val bursaryNames = mutableMapOf<Long, String>()
+        combine(
+            applicationRepository.getAllApplications(),
+            profileRepository.getAllProfiles(),
+            userRepository.getAllUsers(),
+            bursaryRepository.getAllBursaries()
+        ) { applications, profiles, users, bursaries ->
+            val profilesById = profiles.associateBy { it.studentId }
+            val usersById = users.associateBy { it.userId }
+            val bursariesById = bursaries.associateBy { it.bursaryId }
 
             applications
-                .filter {
-                    it.applicationStatus != ApplicationStatus.DRAFT
-                }
+                .asSequence()
+                .filter { it.applicationStatus != ApplicationStatus.DRAFT }
                 .map { application ->
-
-                    val student = students[application.studentId]
-                        ?: loadStudent(application.studentId).also {
-                            students[application.studentId] = it
-                        }
-
-                    val bursaryName = bursaryNames[application.bursaryId]
-                        ?: (
-                                bursaryRepository.getBursaryById(
-                                    application.bursaryId
-                                )?.bursaryName ?: "Unknown bursary"
-                                ).also {
-                                bursaryNames[application.bursaryId] = it
-                            }
-
+                    val profile = profilesById[application.studentId]
+                    val user = profile?.let { usersById[it.userId] }
                     AdminApplicationItem(
                         applicationId = application.applicationId,
                         studentId = application.studentId,
-                        studentName = student.name,
-                        admissionNumber = student.admissionNumber,
+                        studentName = user?.fullName ?: "Unknown student",
+                        admissionNumber = profile?.registrationNumber ?: "-",
                         bursaryId = application.bursaryId,
-                        bursaryName = bursaryName,
+                        bursaryName = bursariesById[application.bursaryId]?.bursaryName ?: "Unknown bursary",
                         requestedAmountKes = application.requestedAmountKes,
                         applicationStatus = application.applicationStatus,
                         submittedAtMillis = application.submittedAtMillis ?: 0L
                     )
                 }
+                .toList()
         }
 
     override suspend fun getApplicationDetail(
@@ -98,26 +81,20 @@ class RoomAdminReviewRepository(
     override suspend fun startReview(
         applicationId: Long
     ): DecisionResult = database.withTransaction {
-
-        val application =
-            applicationRepository.getApplicationById(applicationId)
-                ?: return@withTransaction DecisionResult.failure(
-                    "Application not found."
-                )
+        val application = applicationRepository.getApplicationById(applicationId)
+            ?: return@withTransaction DecisionResult.failure("Application not found.")
 
         if (!ReviewWorkflow.canStartReview(application.applicationStatus)) {
-            return@withTransaction DecisionResult.failure(
-                "Only submitted applications can be reviewed."
-            )
+            return@withTransaction DecisionResult.failure("Only submitted applications can be reviewed.")
         }
 
-        applicationRepository.updateApplication(
+        val updatedRows = applicationRepository.updateApplication(
             application.copy(
                 applicationStatus = ApplicationStatus.UNDER_REVIEW,
                 updatedAtMillis = clock()
             )
         )
-
+        if (updatedRows == 0) return@withTransaction DecisionResult.failure("The application could not be updated.")
         DecisionResult.success()
     }
 
@@ -126,41 +103,27 @@ class RoomAdminReviewRepository(
         message: String,
         reviewedByUserId: Long
     ): DecisionResult = database.withTransaction {
-
-        val application =
-            applicationRepository.getApplicationById(applicationId)
-                ?: return@withTransaction DecisionResult.failure(
-                    "Application not found."
-                )
+        val application = applicationRepository.getApplicationById(applicationId)
+            ?: return@withTransaction DecisionResult.failure("Application not found.")
 
         if (!ReviewWorkflow.canRequestInformation(application.applicationStatus)) {
-            return@withTransaction DecisionResult.failure(
-                "Information can only be requested during review."
-            )
+            return@withTransaction DecisionResult.failure("Information can only be requested during review.")
         }
 
         val cleanMessage = message.trim()
-
         if (cleanMessage.isBlank()) {
-            return@withTransaction DecisionResult.failure(
-                "Please provide a reason for requesting information."
-            )
+            return@withTransaction DecisionResult.failure("Please provide a reason for requesting information.")
         }
 
-        applicationRepository.updateApplication(
+        val updatedRows = applicationRepository.updateApplication(
             application.copy(
                 applicationStatus = ApplicationStatus.NEEDS_INFORMATION,
                 updatedAtMillis = clock()
             )
         )
+        if (updatedRows == 0) return@withTransaction DecisionResult.failure("The application could not be updated.")
 
-        notifyStudent(
-            application.studentId,
-            NotificationType.INFORMATION_REQUESTED,
-            "More information needed",
-            cleanMessage
-        )
-
+        notifyStudent(application.studentId, NotificationType.INFORMATION_REQUESTED, "More information needed", cleanMessage)
         DecisionResult.success()
     }
 
@@ -170,15 +133,10 @@ class RoomAdminReviewRepository(
         remarks: String,
         reviewedByUserId: Long
     ): DecisionResult = database.withTransaction {
-
         val detail = loadDetail(applicationId)
-            ?: return@withTransaction DecisionResult.failure(
-                "Application not found."
-            )
+            ?: return@withTransaction DecisionResult.failure("Application not found.")
 
-        val eligibility =
-            EligibilityRules.check(detail.toEligibilityInput())
-
+        val eligibility = EligibilityRules.check(detail.toEligibilityInput())
         val validation = AllocationRules.validate(
             AllocationInput(
                 applicationStatus = detail.applicationStatus,
@@ -190,21 +148,14 @@ class RoomAdminReviewRepository(
                 hasApprovedAllocation = detail.hasApprovedAllocation
             )
         )
-
         if (!validation.isValid) {
-            return@withTransaction DecisionResult.failure(
-                validation.errors.joinToString("\n")
-            )
+            return@withTransaction DecisionResult.failure(validation.errors.joinToString("\n"))
         }
 
-        val application =
-            applicationRepository.getApplicationById(applicationId)
-                ?: return@withTransaction DecisionResult.failure(
-                    "Application not found."
-                )
+        val application = applicationRepository.getApplicationById(applicationId)
+            ?: return@withTransaction DecisionResult.failure("Application not found.")
 
         val now = clock()
-
         allocationRepository.insertAllocation(
             AllocationRecord(
                 applicationId = applicationId,
@@ -218,21 +169,17 @@ class RoomAdminReviewRepository(
             )
         )
 
-        applicationRepository.updateApplication(
-            application.copy(
-                applicationStatus = ApplicationStatus.APPROVED,
-                updatedAtMillis = now
-            )
+        val updatedRows = applicationRepository.updateApplication(
+            application.copy(applicationStatus = ApplicationStatus.APPROVED, updatedAtMillis = now)
         )
+        if (updatedRows == 0) return@withTransaction DecisionResult.failure("The application could not be updated.")
 
         notifyStudent(
             application.studentId,
             NotificationType.ALLOCATION_CONFIRMED,
             "Bursary awarded",
-            "Your application was approved for KSh %,d."
-                .format(awardedAmountKes)
+            "Your application was approved for KSh %,d.".format(awardedAmountKes)
         )
-
         DecisionResult.success()
     }
 
@@ -241,29 +188,19 @@ class RoomAdminReviewRepository(
         reason: String,
         reviewedByUserId: Long
     ): DecisionResult = database.withTransaction {
-
-        val application =
-            applicationRepository.getApplicationById(applicationId)
-                ?: return@withTransaction DecisionResult.failure(
-                    "Application not found."
-                )
+        val application = applicationRepository.getApplicationById(applicationId)
+            ?: return@withTransaction DecisionResult.failure("Application not found.")
 
         if (!ReviewWorkflow.canDecide(application.applicationStatus)) {
-            return@withTransaction DecisionResult.failure(
-                "Only applications under review can be rejected."
-            )
+            return@withTransaction DecisionResult.failure("Only applications under review can be rejected.")
         }
 
         val cleanReason = reason.trim()
-
         if (cleanReason.isBlank()) {
-            return@withTransaction DecisionResult.failure(
-                "A rejection reason is required."
-            )
+            return@withTransaction DecisionResult.failure("A rejection reason is required.")
         }
 
         val now = clock()
-
         allocationRepository.insertAllocation(
             AllocationRecord(
                 applicationId = applicationId,
@@ -277,44 +214,24 @@ class RoomAdminReviewRepository(
             )
         )
 
-        applicationRepository.updateApplication(
-            application.copy(
-                applicationStatus = ApplicationStatus.REJECTED,
-                updatedAtMillis = now
-            )
+        val updatedRows = applicationRepository.updateApplication(
+            application.copy(applicationStatus = ApplicationStatus.REJECTED, updatedAtMillis = now)
         )
+        if (updatedRows == 0) return@withTransaction DecisionResult.failure("The application could not be updated.")
 
-        notifyStudent(
-            application.studentId,
-            NotificationType.APPLICATION_STATUS_CHANGED,
-            "Application rejected",
-            cleanReason
-        )
-
+        notifyStudent(application.studentId, NotificationType.APPLICATION_STATUS_CHANGED, "Application rejected", cleanReason)
         DecisionResult.success()
     }
 
-    private suspend fun loadDetail(
-        applicationId: Long
-    ): AdminApplicationDetail? {
-
-        val application =
-            applicationRepository.getApplicationById(applicationId)
-                ?: return null
-
-        val bursary =
-            bursaryRepository.getBursaryById(application.bursaryId)
-                ?: error("Bursary ${application.bursaryId} was not found.")
-
-        val student = loadStudent(application.studentId)
-
-        val approved =
-            allocationRepository
-                .getAllocationsByBursary(bursary.bursaryId)
-                .first()
-                .filter {
-                    it.decisionStatus == DecisionStatus.APPROVED
-                }
+    private suspend fun loadDetail(applicationId: Long): AdminApplicationDetail? {
+        val application = applicationRepository.getApplicationById(applicationId) ?: return null
+        val bursary = bursaryRepository.getBursaryById(application.bursaryId)
+            ?: error("Bursary ${application.bursaryId} was not found.")
+        val profile = profileRepository.getProfileById(application.studentId)
+        val user = profile?.let { userRepository.getUserById(it.userId) }
+        val approved = allocationRepository.getAllocationsByBursary(bursary.bursaryId)
+            .first()
+            .filter { it.decisionStatus == DecisionStatus.APPROVED }
 
         return AdminApplicationDetail(
             applicationId = application.applicationId,
@@ -322,59 +239,21 @@ class RoomAdminReviewRepository(
             requestedAmountKes = application.requestedAmountKes,
             justification = application.applicationReason,
             submittedAtMillis = application.submittedAtMillis ?: 0L,
-
             studentId = application.studentId,
-            studentName = student.name,
-            admissionNumber = student.admissionNumber,
-            institutionName = student.institutionName,
-            courseName = student.courseName,
-            yearOfStudy = student.yearOfStudy,
-
-            householdIncomeKes = student.monthlyHouseholdIncomeKes,
-
-            bursaryId = bursary.bursaryId,
-            bursaryName = bursary.bursaryName,
-            applicationDeadlineMillis = bursary.applicationDeadlineMillis,
-
-            // minimumIncomeKes is the maximum income threshold
-            // according to the existing AllocationValidator.
-            incomeLimitKes = bursary.minimumIncomeKes.takeIf {
-                it > 0L
-            },
-
-            maximumAwardKes = bursary.maximumAwardKes,
-            totalBudgetKes = bursary.totalBudgetKes,
-
-            approvedAwardsKes = approved.map {
-                it.allocatedAmount.toLong()
-            },
-
-            hasApprovedAllocation = approved.any {
-                it.applicationId == applicationId
-            }
-        )
-    }
-
-    private suspend fun loadStudent(
-        studentId: Long
-    ): StudentInfo {
-
-        val profile =
-            profileRepository.getProfileById(studentId)
-
-        val user =
-            profile?.let {
-                userRepository.getUserById(it.userId)
-            }
-
-        return StudentInfo(
-            name = user?.fullName ?: "Unknown student",
+            studentName = user?.fullName ?: "Unknown student",
             admissionNumber = profile?.registrationNumber ?: "-",
             institutionName = profile?.institutionName ?: "-",
             courseName = profile?.courseName ?: "-",
             yearOfStudy = profile?.yearOfStudy ?: 0,
-            monthlyHouseholdIncomeKes =
-                profile?.monthlyHouseholdIncomeKes ?: 0L
+            householdIncomeKes = profile?.monthlyHouseholdIncomeKes ?: 0L,
+            bursaryId = bursary.bursaryId,
+            bursaryName = bursary.bursaryName,
+            applicationDeadlineMillis = bursary.applicationDeadlineMillis,
+            incomeLimitKes = bursary.minimumIncomeKes.takeIf { it > 0L },
+            maximumAwardKes = bursary.maximumAwardKes,
+            totalBudgetKes = bursary.totalBudgetKes,
+            approvedAwardsKes = approved.map { it.allocatedAmount.toLong() },
+            hasApprovedAllocation = approved.any { it.applicationId == applicationId }
         )
     }
 
@@ -384,12 +263,8 @@ class RoomAdminReviewRepository(
         title: String,
         message: String
     ) {
-
         val repository = notificationRepository ?: return
-
-        val profile =
-            profileRepository.getProfileById(studentId) ?: return
-
+        val profile = profileRepository.getProfileById(studentId) ?: return
         repository.insertNotification(
             AppNotification(
                 userId = profile.userId,
