@@ -2,86 +2,78 @@ package com.example.bursaryaid.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Light Palette - Modern Emerald & Teal Theme
-val EmeraldPrimaryLight = Color(0xFF0B6E4F)
+// Muted blue-grey and soft teal palette: calm accents with strong text contrast.
+val EmeraldPrimaryLight = Color(0xFF486579)
 val OnEmeraldPrimaryLight = Color(0xFFFFFFFF)
-val PrimaryContainerLight = Color(0xFFD1E8DF)
-val OnPrimaryContainerLight = Color(0xFF002115)
+val PrimaryContainerLight = Color(0xFFDCE8EF)
+val OnPrimaryContainerLight = Color(0xFF172B37)
 
-val TealSecondaryLight = Color(0xFF007A87)
+val TealSecondaryLight = Color(0xFF557D78)
 val OnSecondaryLight = Color(0xFFFFFFFF)
-val SecondaryContainerLight = Color(0xFFE0F2F5)
-val OnSecondaryContainerLight = Color(0xFF001F24)
+val SecondaryContainerLight = Color(0xFFDCEBE7)
+val OnSecondaryContainerLight = Color(0xFF18332F)
 
-val AmberTertiaryLight = Color(0xFFC05621)
+val AmberTertiaryLight = Color(0xFF986746)
 val OnTertiaryLight = Color(0xFFFFFFFF)
-val TertiaryContainerLight = Color(0xFFFEEBC8)
-val OnTertiaryContainerLight = Color(0xFF3B1500)
+val TertiaryContainerLight = Color(0xFFF3E4D8)
+val OnTertiaryContainerLight = Color(0xFF392315)
 
-val SurfaceLight = Color(0xFFF8FAF9)
-val OnSurfaceLight = Color(0xFF191C1A)
-val SurfaceVariantLight = Color(0xFFDEE5E0)
-val OnSurfaceVariantLight = Color(0xFF414944)
-val BackgroundLight = Color(0xFFF8FAF9)
+val SurfaceLight = Color(0xFFFAFBFA)
+val OnSurfaceLight = Color(0xFF182226)
+val SurfaceVariantLight = Color(0xFFE6ECEB)
+val OnSurfaceVariantLight = Color(0xFF3F4C50)
+val BackgroundLight = Color(0xFFFAFBFA)
 
-// Dark Palette
-val EmeraldPrimaryDark = Color(0xFF74D8AF)
-val OnEmeraldPrimaryDark = Color(0xFF003826)
-val PrimaryContainerDark = Color(0xFF00523A)
-val OnPrimaryContainerDark = Color(0xFFD1E8DF)
+// Dark palette retains soft accents while keeping foreground text clearly separated.
+val EmeraldPrimaryDark = Color(0xFFA9C8D9)
+val OnEmeraldPrimaryDark = Color(0xFF172B37)
+val PrimaryContainerDark = Color(0xFF314D5E)
+val OnPrimaryContainerDark = Color(0xFFE0EDF4)
 
-val TealSecondaryDark = Color(0xFF80D4E2)
-val OnSecondaryDark = Color(0xFF00363D)
-val SecondaryContainerDark = Color(0xFF004F59)
-val OnSecondaryContainerDark = Color(0xFFE0F2F5)
+val TealSecondaryDark = Color(0xFFA6CCC4)
+val OnSecondaryDark = Color(0xFF18332F)
+val SecondaryContainerDark = Color(0xFF315A54)
+val OnSecondaryContainerDark = Color(0xFFE0F1ED)
 
-val AmberTertiaryDark = Color(0xFFFFB787)
-val OnTertiaryDark = Color(0xFF532200)
-val TertiaryContainerDark = Color(0xFF773300)
-val OnTertiaryContainerDark = Color(0xFFFEEBC8)
+val AmberTertiaryDark = Color(0xFFE4B795)
+val OnTertiaryDark = Color(0xFF392315)
+val TertiaryContainerDark = Color(0xFF67452F)
+val OnTertiaryContainerDark = Color(0xFFF6E9DE)
 
-val SurfaceDark = Color(0xFF111413)
-val OnSurfaceDark = Color(0xFFE1E3E0)
-val SurfaceVariantDark = Color(0xFF414944)
-val OnSurfaceVariantDark = Color(0xFFC1C9C4)
-val BackgroundDark = Color(0xFF111413)
+val SurfaceDark = Color(0xFF141B1E)
+val OnSurfaceDark = Color(0xFFE7ECEE)
+val SurfaceVariantDark = Color(0xFF3C484C)
+val OnSurfaceVariantDark = Color(0xFFC6D0D3)
+val BackgroundDark = Color(0xFF141B1E)
 
-// Status Chip Badges (Light & Dark friendly)
+// Status chips use dark foregrounds on soft backgrounds for legibility.
 val StatusApprovedBg = Color(0xFFD1E7DD)
 val StatusApprovedText = Color(0xFF0F5132)
-
 val StatusRejectedBg = Color(0xFFF8D7DA)
 val StatusRejectedText = Color(0xFF842029)
-
 val StatusNeedsInfoBg = Color(0xFFFFE5D0)
 val StatusNeedsInfoText = Color(0xFF8A3B00)
-
 val StatusUnderReviewBg = Color(0xFFFFF3CD)
 val StatusUnderReviewText = Color(0xFF664D03)
-
 val StatusSubmittedBg = Color(0xFFCFE2FF)
 val StatusSubmittedText = Color(0xFF084298)
-
 val StatusDraftBg = Color(0xFFE2E3E5)
 val StatusDraftText = Color(0xFF41464B)
 
-// Shared Primary Purple Palette
-val PrimaryPurple = Color(0xFF6750A4)
-val PrimaryPurpleDark = Color(0xFFD0BCFF)
-val IndigoPurple = Color(0xFF4F378B)
-val LightLavender = Color(0xFFF3EDF7)
-val DarkPurpleBg = Color(0xFF1C1B1F)
-val DarkPurpleSurface = Color(0xFF2B2930)
+// Legacy shared accent names kept for screens that still reference them.
+val PrimaryPurple = Color(0xFF486579)
+val PrimaryPurpleDark = Color(0xFFA9C8D9)
+val IndigoPurple = Color(0xFF344F62)
+val LightLavender = Color(0xFFDCE8EF)
+val DarkPurpleBg = Color(0xFF141B1E)
+val DarkPurpleSurface = Color(0xFF26343A)
+val PurpleGradientStart = Color(0xFF486579)
+val PurpleGradientEnd = Color(0xFF344F62)
+val DisabledPurple = Color(0xFF91A7B4)
 
-// Accents and Gradients
-val PurpleGradientStart = Color(0xFF6750A4)
-val PurpleGradientEnd = Color(0xFF4F378B)
-val DisabledPurple = Color(0xFF9A82DB)
-
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
-
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val Purple80 = Color(0xFFA9C8D9)
+val PurpleGrey80 = Color(0xFFC6D0D3)
+val Pink80 = Color(0xFFE4B795)
+val Purple40 = Color(0xFF486579)
+val PurpleGrey40 = Color(0xFF65777F)
+val Pink40 = Color(0xFF986746)

@@ -114,7 +114,8 @@ class StudentProfileViewModel(
                     profileUpdatedAtMillis = currentTimeMillis()
                 )
                 val savedStudentId = if (state.hasExistingProfile) {
-                    studentProfileRepository.updateStudentProfile(profile)
+                    val updatedRows = studentProfileRepository.updateStudentProfile(profile)
+                    check(updatedRows > 0) { "The student profile no longer exists and could not be updated." }
                     state.studentId
                 } else {
                     studentProfileRepository.insertStudentProfile(profile)

@@ -7,10 +7,11 @@ import com.example.bursaryaid.repository.BursaryApplicationRepository
 import com.example.bursaryaid.repository.BursaryRepository
 import com.example.bursaryaid.repository.StudentProfileRepository
 import com.example.bursaryaid.feature.student.logic.ApplicationRules
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -23,7 +24,6 @@ data class ApplicationDetailsUiState(
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
     val successMessage: String? = null,
-    /** One-shot signal: the draft was deleted and the screen should navigate back. */
     val isDeleted: Boolean = false
 )
 
@@ -37,40 +37,66 @@ class ApplicationDetailsViewModel(
 
     private val _uiState = MutableStateFlow(ApplicationDetailsUiState(selectedApplicationId = selectedApplicationId))
     val uiState: StateFlow<ApplicationDetailsUiState> = _uiState.asStateFlow()
+    private var observationJob: Job? = null
 
     init {
         getApplicationById(selectedApplicationId)
     }
 
-    /** READ one application; refuses to show applications that belong to another student. */
+    /**
+     * Observe the application and bursary tables rather than taking a one-time snapshot.
+     * This keeps the student's detail screen in sync when an administrator changes a status,
+     * or when the bursary is renamed/closed while this screen is open.
+     */
     fun getApplicationById(applicationId: Long) {
-        viewModelScope.launch {
+        observationJob?.cancel()
+        observationJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             try {
                 val profile = studentProfileRepository.getStudentProfile(userId)
-                val application = applicationRepository.getApplicationById(applicationId)
-                if (profile == null || application == null || application.studentId != profile.studentId) {
-                    _uiState.update { it.copy(isLoading = false, application = null, errorMessage = "This application could not be found.") }
+                if (profile == null) {
+                    _uiState.update {
+                        it.copy(isLoading = false, application = null, errorMessage = "This application could not be found.")
+                    }
                     return@launch
                 }
-                val bursaryName = try {
-                    bursaryRepository.getOpenBursaries().first().firstOrNull { it.bursaryId == application.bursaryId }?.bursaryName
-                } catch (e: Exception) {
-                    e.rethrowIfCancellation()
-                    null
-                }
-                _uiState.update {
-                    it.copy(
-                        application = application,
-                        bursaryName = bursaryName,
-                        canEdit = ApplicationRules.canEdit(application.applicationStatus),
-                        canDelete = ApplicationRules.canDelete(application.applicationStatus),
-                        isLoading = false
-                    )
+
+                combine(
+                    applicationRepository.observeApplicationById(applicationId),
+                    bursaryRepository.getAllBursaries()
+                ) { application, bursaries ->
+                    application to bursaries
+                }.collect { (application, bursaries) ->
+                    if (application == null || application.studentId != profile.studentId) {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                application = null,
+                                canEdit = false,
+                                canDelete = false,
+                                errorMessage = "This application could not be found."
+                            )
+                        }
+                    } else {
+                        _uiState.update {
+                            it.copy(
+                                application = application,
+                                bursaryName = bursaries.firstOrNull { bursary ->
+                                    bursary.bursaryId == application.bursaryId
+                                }?.bursaryName ?: "Unknown bursary",
+                                canEdit = ApplicationRules.canEdit(application.applicationStatus),
+                                canDelete = ApplicationRules.canDelete(application.applicationStatus),
+                                isLoading = false,
+                                errorMessage = null
+                            )
+                        }
+                    }
                 }
             } catch (e: Exception) {
                 e.rethrowIfCancellation()
-                _uiState.update { it.copy(isLoading = false, errorMessage = "Could not load this application. Please try again.") }
+                _uiState.update {
+                    it.copy(isLoading = false, errorMessage = "Could not load this application. Please try again.")
+                }
             }
         }
     }

@@ -20,6 +20,10 @@ interface BursaryApplicationDao {
     @Query("SELECT * FROM bursary_applications WHERE applicationId = :applicationId")
     suspend fun getApplicationById(applicationId: Long): BursaryApplication?
 
+    /** Emits the latest row after every insert, update or delete. */
+    @Query("SELECT * FROM bursary_applications WHERE applicationId = :applicationId LIMIT 1")
+    fun observeApplicationById(applicationId: Long): Flow<BursaryApplication?>
+
     @Query("SELECT * FROM bursary_applications WHERE studentId = :studentId ORDER BY updatedAtMillis DESC")
     fun getApplicationsByStudent(studentId: Long): Flow<List<BursaryApplication>>
 
